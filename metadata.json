@@ -1,0 +1,9 @@
+
+{
+  "name": "MarbleLux - Premium Marble & Stone Surfaces",
+  "description": "A high-end e-commerce platform for luxury marble, featuring product galleries, detailed specifications, and an AI-powered stone consultant.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
