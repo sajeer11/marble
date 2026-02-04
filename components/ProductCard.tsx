@@ -20,20 +20,20 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           src={product.image} 
         />
         {product.tag && (
-          <div className={`absolute top-4 right-4 text-white text-xs font-bold px-3 py-3 rounded-full h-10 w-10 flex items-center justify-center ${
+          <div className={`absolute top-4 right-4 text-white text-xs font-bold px-2 py-2 rounded-full h-10 w-10 flex items-center justify-center ${
             product.tag.includes('-') ? 'bg-red-400' : 
             product.tag === 'New' ? 'bg-teal-400' : 'bg-primary'
           }`}>
             {product.tag}
           </div>
         )}
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center gap-4">
-          <Link to={`/product/${product.id}`} className="bg-white text-primary font-bold py-3 px-10 hover:bg-primary hover:text-white transition-all w-3/4 text-center">
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center gap-3 px-4">
+          <Link to={`/product/${product.id}`} className="bg-white text-primary font-bold py-2 px-6 sm:py-3 sm:px-10 hover:bg-primary hover:text-white transition-all w-full sm:w-3/4 text-center">
             View Details
           </Link>
           <button 
             onClick={() => addToCart(product)}
-            className="bg-primary text-white font-bold py-3 px-10 hover:bg-primary-dark transition-all w-3/4 text-center"
+            className="bg-primary text-white font-bold py-2 px-6 sm:py-3 sm:px-10 hover:bg-primary-dark transition-all w-full sm:w-3/4 text-center"
           >
             Add to Cart
           </button>

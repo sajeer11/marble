@@ -76,3 +76,61 @@ export const GALLERY_IMAGES = [
   "https://lh3.googleusercontent.com/aida-public/AB6AXuACCDL-CF76q4wEwH4M9i9VzKm9p57a_yzj_FzfkS4BuuGQTzuzr8LIgkT-Z0ZrLRdghN0XG2xB-DyFeK8bDME5KOXkSGjlz-NvShQg6_U076qk2QzaCVa0iJso9VjkHFH-9_F1N0ZhAvd9BEAGHTFmKiKI5B2C8cVjPTE-Q-rQW771cXb_hNSgVUeOrWgS38jcHbqjzk8uGYnghtEvhkViKga6Kc9fd1CoRsXMENVy0Kv_IyJfl0y2COsPucaOsi_6q-8-TMjDD-E",
   "https://lh3.googleusercontent.com/aida-public/AB6AXuDHIO45EabtYTYLMVw35IcdXwOw8FD_1swqQ3n5Tu2l_Z1Zt96_n5LJSXo_laqIf-j9kTGJr6CdXSmx3xkrtNZgc18VfEj3dOfmH2NJPpr52bAA049m2DG4UNSX5wAWNbfxRFHnyFPQ9CDTBdZJhJNh7Uap4TLjfCHBXlTf8IWM9DqKc_RAnSnv4HRB5j6b1GDDzsp9aqVgZ-5fKOvMsnMgJovbcJibU6CF-1yMPn76mWARHQEykB27nQvQ8RAbjB4JMcXv347OHk8"
 ];
+
+
+
+
+import { Order, User } from './types';
+
+export const MOCK_USER: User = {
+  name: "Julianne Moore",
+  email: "julianne.m@example.com",
+  membershipDate: "Oct 2023",
+  membershipType: "Premium Member",
+  avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200&h=200"
+};
+
+export const MOCK_ORDERS: Order[] = [
+  {
+    id: "#MC-94281",
+    date: "Oct 12, 2023",
+    amount: 1450.00,
+    status: "In Transit",
+    summary: "Marble Coffee Table + 2 items",
+    products: [
+      { id: "1", name: "Marble Coffee Table", image: "https://picsum.photos/seed/marble1/100/100" },
+      { id: "2", name: "Marble Coaster Set", image: "https://picsum.photos/seed/marble2/100/100" },
+    ]
+  },
+  {
+    id: "#MC-89104",
+    date: "Sep 28, 2023",
+    amount: 320.00,
+    status: "Delivered",
+    summary: "Carrara Marble Lamp",
+    products: [
+      { id: "3", name: "Carrara Marble Lamp", image: "https://picsum.photos/seed/marble3/100/100" }
+    ]
+  },
+  {
+    id: "#MC-87522",
+    date: "Aug 15, 2023",
+    amount: 4800.00,
+    status: "Delivered",
+    summary: "Black Marble Dining Table + Chairs",
+    products: [
+      { id: "4", name: "Black Marble Table", image: "https://picsum.photos/seed/marble4/100/100" },
+      { id: "5", name: "Designer Chair", image: "https://picsum.photos/seed/chair1/100/100" }
+    ]
+  },
+  {
+    id: "#MC-82103",
+    date: "Jun 20, 2023",
+    amount: 3150.00,
+    status: "Processing",
+    summary: "Statuario Polished Tiles",
+    products: [
+      { id: "6", name: "Statuario Tiles", image: "https://picsum.photos/seed/tile1/100/100" }
+    ]
+  }
+];

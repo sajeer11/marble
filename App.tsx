@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
@@ -11,9 +10,15 @@ import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
-import { getMarbleAdvice } from './geminiService';
 import { CartProvider } from './CartContext';
+// import Sidebar from './components/Profile/Sidebar';
+import Dashboard from './components/Profile/Dashboard';
+import MyOrders from './components/Profile/MyOrders';
+import TrackShipment from './components/Profile/TrackShipment';
+import GeminiConcierge from './components/Profile/GeminiConcierge';
+import { getMarbleAdvice } from './geminiService';
 
+// ---------------- Marble Assistant Chat ----------------
 const MarbleAssistant: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [prompt, setPrompt] = useState('');
@@ -84,6 +89,7 @@ const MarbleAssistant: React.FC = () => {
   );
 };
 
+// ---------------- Scroll to Top on Route Change ----------------
 const ScrollToTop = () => {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -92,28 +98,41 @@ const ScrollToTop = () => {
   return null;
 };
 
+// ---------------- App ----------------
 const App: React.FC = () => {
   return (
     <CartProvider>
       <Router>
         <ScrollToTop />
-        <div className="min-h-screen flex flex-col font-sans">
-          <Navbar />
-          <main className="flex-grow">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/shop" element={<Shop />} />
-              <Route path="/product/:id" element={<ProductDetail />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Login />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<Checkout />} />
-            </Routes>
-          </main>
-          <Footer />
+        <div className="min-h-screen flex font-sans overflow-x-hidden">
+          {/* --- Sidebar + Dashboard Layout --- */}
+          {/* <Sidebar /> */}
+          <div className="flex-1 flex flex-col">
+            <Navbar />
+            <main className="flex-1 container mx-auto px-4 md:px-8">
+              <Routes>
+                {/* E-commerce Routes */}
+                <Route path="/" element={<Home />} />
+                <Route path="/shop" element={<Shop />} />
+                <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Login />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
+
+                {/* Dashboard Routes */}
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/orders" element={<MyOrders />} />
+                <Route path="/track/:id" element={<TrackShipment />} />
+              
+              </Routes>
+            </main>
+            <Footer />
+          </div>
           <MarbleAssistant />
+              <GeminiConcierge />
         </div>
       </Router>
     </CartProvider>

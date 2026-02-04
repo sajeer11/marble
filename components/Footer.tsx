@@ -5,8 +5,8 @@ import { Link } from 'react-router-dom';
 const Footer: React.FC = () => {
   return (
     <footer className="bg-white dark:bg-background-dark border-t border-gray-200 dark:border-gray-800 pt-16 pb-8">
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
           <div className="space-y-6">
             <h3 className="text-2xl font-bold font-display text-gray-900 dark:text-white">MarbleLux.</h3>
             <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-xs">
@@ -32,20 +32,20 @@ const Footer: React.FC = () => {
             </ul>
           </div>
           <div>
-            <h4 className="text-gray-400 font-medium mb-6 uppercase tracking-wider text-xs">Newsletter</h4>
-            <form className="flex flex-col sm:flex-row gap-4">
+            <h4 className="text-gray-400 font-medium mb-4 uppercase tracking-wider text-xs">Newsletter</h4>
+            <form className="flex flex-col sm:flex-row gap-3">
               <input 
                 className="bg-transparent border-b border-gray-900 dark:border-white focus:outline-none py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 w-full"
                 placeholder="Enter Your Email Address"
                 type="email"
               />
-              <button className="text-sm font-bold uppercase border-b border-gray-900 dark:border-white py-2 hover:text-primary hover:border-primary transition-colors whitespace-nowrap">
+              <button className="text-sm font-bold uppercase border-b border-gray-900 dark:border-white py-2 hover:text-primary hover:border-primary transition-colors whitespace-nowrap w-full sm:w-auto text-center">
                 Subscribe
               </button>
             </form>
           </div>
         </div>
-        <div className="border-t border-gray-200 dark:border-gray-800 pt-8 flex justify-between items-center">
+        <div className="border-t border-gray-200 dark:border-gray-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-3">
           <p className="text-gray-900 dark:text-white text-sm">2023 MarbleLux. All rights reserved</p>
         </div>
       </div>

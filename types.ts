@@ -28,3 +28,54 @@ export interface RangeCategory {
   title: string;
   image: string;
 }
+
+// src/types/index.ts
+
+export interface Product {
+  id: string;
+  name: string;
+  image: string;
+  price: number;
+  category: string;
+  description: string;
+ // tag?: string;
+}
+
+export interface CartItem extends Product {
+  quantity: number;
+}
+
+
+
+export type OrderStatus = 'In Transit' | 'Delivered' | 'Processing' | 'Shipped' | 'Cancelled';
+
+export interface ProductThumbnail {
+  id: string;
+  name: string;
+  image: string;
+}
+
+export interface Order {
+  id: string;
+  date: string;
+  amount: number;
+  status: OrderStatus;
+  products: ProductThumbnail[];
+  summary: string;
+}
+
+export interface User {
+  name: string;
+  email: string;
+  membershipDate: string;
+  membershipType: string;
+  avatar: string;
+}
+
+export interface ShipmentStep {
+  title: string;
+  description: string;
+  date: string;
+  status: 'completed' | 'current' | 'upcoming';
+  icon: string;
+}
