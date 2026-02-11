@@ -1,9 +1,14 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { MOCK_USER, MOCK_ORDERS } from '../../constants';
 import OrderRow from './Orderrow';
 
 const Dashboard: React.FC = () => {
+  const router = useRouter();
+
   return (
     <div className="flex flex-col gap-10 animate-fadeIn max-w-7xl mx-auto px-4 md:px-0">
       
@@ -52,7 +57,9 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Edit Profile Button */}
-          <button className="w-full md:w-auto mx-auto md:mx-0 bg-primary hover:bg-slate-800 text-white font-bold py-3 px-4 md:py-4 md:px-10 rounded-2xl transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-2 mt-4 md:mt-0">
+          <button 
+            onClick={() => router.push('/settings')}
+            className="w-full md:w-auto mx-auto md:mx-0 bg-primary hover:bg-slate-800 text-white font-bold py-3 px-4 md:py-4 md:px-10 rounded-2xl transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-2 mt-4 md:mt-0">
             <span className="material-symbols-outlined text-[20px]">edit</span>
             <span>Edit Profile</span>
           </button>

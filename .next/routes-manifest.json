@@ -98,6 +98,12 @@
       "namedRegex": "^/register(?:/)?$"
     },
     {
+      "page": "/settings",
+      "regex": "^/settings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/settings(?:/)?$"
+    },
+    {
       "page": "/shop",
       "regex": "^/shop(?:/)?$",
       "routeKeys": {},

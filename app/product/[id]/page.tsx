@@ -30,7 +30,7 @@ export default function ProductDetail() {
     );
   }
 
-  const relatedProducts = PRODUCTS.filter((p) => p.id !== params.id).slice(0, 4);
+  const relatedProducts = PRODUCTS.filter((p) => p.id !== id).slice(0, 4);
 
   return (
     <div className="flex flex-col">

@@ -3,13 +3,14 @@
   "/cart/page": "/cart",
   "/checkout/page": "/checkout",
   "/product/[id]/page": "/product/[id]",
+  "/settings/page": "/settings",
   "/shop/page": "/shop",
   "/about/page": "/about",
   "/dashboard/page": "/dashboard",
   "/contact/page": "/contact",
   "/orders/page": "/orders",
-  "/page": "/",
   "/login/page": "/login",
   "/register/page": "/register",
+  "/page": "/",
   "/track/[id]/page": "/track/[id]"
 }
