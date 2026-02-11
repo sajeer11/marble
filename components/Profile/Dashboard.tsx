@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { MOCK_USER, MOCK_ORDERS } from '../../constants';
 import OrderRow from './Orderrow';
 
@@ -130,7 +130,7 @@ const Dashboard: React.FC = () => {
                   order.status === 'Processing' ? 'bg-blue-50 text-blue-700 border-blue-100' :
                   'bg-slate-50 text-slate-700 border-slate-100'
                 }`}>{order.status}</span>
-                <Link to={`/track/${order.id.replace('#', '')}`} className="text-slate-300 hover:text-primary">
+                <Link href={`/track/${order.id.replace('#', '')}`} className="text-slate-300 hover:text-primary">
                   <span className="material-symbols-outlined">arrow_forward</span>
                 </Link>
               </div>

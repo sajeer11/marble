@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 const HeroSection: React.FC = () => {
   return (
@@ -23,7 +23,7 @@ const HeroSection: React.FC = () => {
             Elevate your spaces with our premium selection of imported marble. Timeless elegance tailored for every vision.
           </p>
           <Link
-            to="/shop"
+            href="/shop"
             className="inline-block bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 sm:py-4 sm:px-10 uppercase text-sm tracking-widest transition-all duration-300 shadow-md"
           >
             Buy Now

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 const CheckoutBanner: React.FC = () => {
   return (
@@ -8,7 +8,7 @@ const CheckoutBanner: React.FC = () => {
       <div className="relative text-center">
         <h1 className="text-4xl font-bold text-gray-900 mb-2 font-display">Checkout</h1>
         <div className="flex items-center justify-center space-x-2 text-sm">
-          <Link to="/" className="font-medium hover:text-primary transition-colors">Home</Link>
+          <Link href="/" className="font-medium hover:text-primary transition-colors">Home</Link>
           <span className="material-icons text-sm">chevron_right</span>
           <span className="font-light">Checkout</span>
         </div>

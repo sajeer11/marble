@@ -1,12 +1,12 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 const Header: React.FC = () => {
   return (
     <header className="flex items-center justify-between whitespace-nowrap border-b border-border-soft px-6 md:px-10 py-4 bg-white sticky top-0 z-50">
       <div className="flex items-center gap-10">
-        <Link to="/" className="flex items-center gap-3 text-primary">
+        <Link href="/" className="flex items-center gap-3 text-primary">
           <div className="size-7">
             <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
               <path d="M4 4H17.3334V17.3334H30.6666V30.6666H44V44H4V4Z" fill="currentColor"></path>

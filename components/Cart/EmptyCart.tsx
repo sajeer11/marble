@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 const EmptyCart: React.FC = () => {
   return (
@@ -10,7 +10,7 @@ const EmptyCart: React.FC = () => {
         Looks like you haven't added anything to your cart yet.
       </p>
       <Link
-        to="/shop"
+        href="/shop"
         className="inline-block bg-primary text-white font-bold py-4 px-12 uppercase tracking-widest hover:bg-primary-dark transition-all"
       >
         Go to Shop

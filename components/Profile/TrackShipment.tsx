@@ -1,6 +1,9 @@
 
+'use client';
+
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
 const TrackShipment: React.FC = () => {
   const { id } = useParams();
@@ -15,9 +18,9 @@ const TrackShipment: React.FC = () => {
   return (
     <div className="flex flex-col gap-10 animate-fadeIn">
       <nav className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest">
-        <Link to="/" className="text-slate-400 hover:text-accent-gold transition-colors">Home</Link>
-        <span className="text-slate-300">/</span>
-        <Link to="/orders" className="text-slate-400 hover:text-accent-gold transition-colors">Account</Link>
+        <Link href="/" className="text-slate-400 hover:text-accent-gold transition-colors">Home</Link>
+        <span className="text-slate-600">/</span>
+        <Link href="/orders" className="text-slate-400 hover:text-accent-gold transition-colors">Account</Link>
         <span className="text-slate-300">/</span>
         <span className="text-primary">Track Shipment</span>
       </nav>

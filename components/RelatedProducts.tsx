@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import ProductCard from '@/components/ProductCard';
 import { Product } from '@/types';
 
@@ -19,7 +19,7 @@ const RelatedProducts: React.FC<Props> = ({ relatedProducts }) => (
     </div>
     <div className="text-center mt-12">
       <Link
-        to="/shop"
+        href="/shop"
         className="border border-primary text-primary hover:bg-primary hover:text-white font-semibold py-3 px-16 transition-all"
       >
         Show More

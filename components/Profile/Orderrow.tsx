@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Order } from '@/types';
 
 interface OrderRowProps {
@@ -51,7 +51,7 @@ const OrderRow: React.FC<OrderRowProps> = ({ order }) => {
         </span>
       </td>
       <td className="px-4 py-4 sm:px-8 sm:py-6 rounded-r-2xl text-right">
-        <Link to={`/track/${order.id.replace('#', '')}`} className="text-slate-300 group-hover:text-primary transition-colors">
+        <Link href={`/track/${order.id.replace('#', '')}`} className="text-slate-300 group-hover:text-primary transition-colors">
           <span className="material-symbols-outlined font-bold">arrow_forward</span>
         </Link>
       </td>

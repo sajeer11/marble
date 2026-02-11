@@ -1,13 +1,17 @@
+'use client';
+
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { NAV_LINKS } from '../constants';
-import { useCart } from '../CartContext';
+import { useCart } from '../app/CartContext';
 import Sidebar from './Profile/Sidebar'; // your Sidebar component
 import Dashboard from './Profile/Dashboard';
+
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const location = useLocation();
+  const pathname = usePathname();
   const { cartCount } = useCart();
 
   return (
@@ -15,7 +19,7 @@ const Navbar: React.FC = () => {
       <nav className="w-full bg-white dark:bg-surface-dark shadow-sm sticky top-0 z-50 transition-colors duration-300">
         <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2">
             <span className="material-icons-outlined text-primary text-3xl">terrain</span>
             <span className="text-2xl font-bold font-display tracking-tight text-gray-900 dark:text-white">
               MarbleLux
@@ -27,9 +31,9 @@ const Navbar: React.FC = () => {
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.path}
-                to={link.path}
+                href={link.path}
                 className={`hover:text-primary transition-colors ${
-                  location.pathname === link.path
+                  pathname === link.path
                     ? 'text-primary'
                     : 'text-gray-700 dark:text-gray-200'
                 }`}
@@ -61,7 +65,7 @@ const Navbar: React.FC = () => {
             </button>
 
             {/* Cart Icon */}
-            <Link to="/cart" className="hover:text-primary transition-colors relative">
+            <Link href="/cart" className="hover:text-primary transition-colors relative">
               <span className="material-icons-outlined">shopping_cart</span>
               {cartCount > 0 && (
                 <span className="absolute -top-1 -right-2 bg-primary text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center">
@@ -86,7 +90,7 @@ const Navbar: React.FC = () => {
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.path}
-                to={link.path}
+                href={link.path}
                 className="block text-lg font-medium hover:text-primary transition-colors dark:text-white"
                 onClick={() => setIsMenuOpen(false)}
               >

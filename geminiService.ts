@@ -2,7 +2,7 @@
 import { GoogleGenAI } from "@google/genai";
 
 // Initialize the GoogleGenAI client using a named parameter for the API key as required.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
 
 export const getMarbleAdvice = async (prompt: string) => {
   try {

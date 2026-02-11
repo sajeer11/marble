@@ -1,4 +1,6 @@
 
+'use client';
+
 import React, { useState } from 'react';
 import { MOCK_USER, MOCK_ORDERS } from '../../constants';
 

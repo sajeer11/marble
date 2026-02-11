@@ -1,8 +1,10 @@
 
+'use client';
+
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Product } from '../types';
-import { useCart } from '../CartContext';
+import { useCart } from '../app/CartContext';
 
 interface ProductCardProps {
   product: Product;
@@ -28,7 +30,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
         )}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center gap-3 px-4">
-          <Link to={`/product/${product.id}`} className="bg-white text-primary font-bold py-2 px-6 sm:py-3 sm:px-10 hover:bg-primary hover:text-white transition-all w-full sm:w-3/4 text-center">
+          <Link href={`/product/${product.id}`} className="bg-white text-primary font-bold py-2 px-6 sm:py-3 sm:px-10 hover:bg-primary hover:text-white transition-all w-full sm:w-3/4 text-center">
             View Details
           </Link>
           <button 

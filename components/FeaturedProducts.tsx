@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import ProductCard from './ProductCard';
 import { PRODUCTS } from '@/constants';
 
@@ -19,7 +19,7 @@ const FeaturedProducts: React.FC = () => {
         </div>
         <div className="text-center mt-12">
           <Link
-            to="/shop"
+            href="/shop"
             className="border border-primary text-primary hover:bg-primary hover:text-white font-semibold py-2 px-6 sm:py-3 sm:px-16 transition-colors duration-300"
           >
             Show More

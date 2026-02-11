@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 interface Props {
   cartTotal: number;
@@ -26,7 +26,7 @@ const CartSummary: React.FC<Props> = ({ cartTotal }) => {
         </div>
 
         <Link
-          to="/checkout"
+          href="/checkout"
           className="block text-center w-full border-2 border-black dark:border-white py-4 rounded-xl font-bold hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all mt-8 uppercase tracking-widest text-sm"
         >
           Check Out
