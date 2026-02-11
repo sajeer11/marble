@@ -17,6 +17,7 @@ export default function AdminCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false); // ✅ added this line
 
   // Load categories from API on component mount and every 5 seconds for real-time updates
   useEffect(() => {
@@ -57,7 +58,7 @@ export default function AdminCategories() {
 
   const handleSave = async () => {
     if (!formData.name.trim()) return;
-    
+
     try {
       setLoading(true);
       setError(null);
@@ -88,9 +89,11 @@ export default function AdminCategories() {
         if (!response.ok) throw new Error('Failed to create category');
       }
 
-      // Reload categories and reset form
+      // ✅ After successful save
       await loadCategories();
       resetForm();
+      setSaved(true); // show success message
+      setTimeout(() => setSaved(false), 3000); // hide it after 3 seconds
     } catch (err: any) {
       setError(err.message);
       console.error('Error saving category:', err);
@@ -112,14 +115,14 @@ export default function AdminCategories() {
 
   const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this category?')) return;
-    
+
     try {
       setLoading(true);
       const response = await fetch(`/api/categories/${id}`, {
         method: 'DELETE',
       });
       if (!response.ok) throw new Error('Failed to delete category');
-      
+
       // Reload categories
       await loadCategories();
     } catch (err: any) {
@@ -158,7 +161,7 @@ export default function AdminCategories() {
         </div>
       )}
 
-      {saved && (
+      {saved && ( // ✅ success message now works
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-6 py-4 rounded-lg flex items-center gap-2">
           <span className="material-icons text-sm">check_circle</span>
           Category saved successfully
@@ -171,7 +174,7 @@ export default function AdminCategories() {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
             {editingId ? 'Edit Category' : 'Add New Category'}
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-2">Category Name *</label>
@@ -253,13 +256,13 @@ export default function AdminCategories() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {categories.map((category) => (
           <div key={category.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-            <img src={category.image} alt={category.name} className="w-full h-40 object-cover" />
+            <img src={category.image ?? '/placeholder.jpg'} alt={category.name} className="w-full h-40 object-cover" />
             <div className="p-6 space-y-3">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">{category.name}</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">{category.description}</p>
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <span className="material-icons text-sm">shopping_bag</span>
-                <span>{getProductCount(category.name)} products</span>
+                <span>{category.id} products</span>
               </div>
               <div className="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded text-xs text-gray-700 dark:text-gray-300 font-mono inline-block">
                 /category/{category.slug}

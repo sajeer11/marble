@@ -1,15 +1,47 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ProductCard from '@/components/ProductCard';
-import { PRODUCTS } from '@/constants';
 
 export default function Shop() {
+  const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [filter, setFilter] = useState('All');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProductsAndCategories = async () => {
+      try {
+        setLoading(true);
+        const [productsRes, categoriesRes] = await Promise.all([
+          fetch('/api/products'),
+          fetch('/api/categories'),
+        ]);
+        
+        if (productsRes.ok) {
+          const productsData = await productsRes.json();
+          setProducts(productsData);
+        }
+        
+        if (categoriesRes.ok) {
+          const categoriesData = await categoriesRes.json();
+          setCategories(categoriesData);
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProductsAndCategories();
+    const interval = setInterval(loadProductsAndCategories, 3000); // Refresh every 3 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   const filteredProducts = filter === 'All' 
-    ? PRODUCTS 
-    : PRODUCTS.filter(p => p.category.includes(filter));
+    ? products 
+    : products.filter(p => p.category === filter);
 
   return (
     <div className="flex flex-col">
