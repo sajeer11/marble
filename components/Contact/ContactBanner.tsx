@@ -2,7 +2,7 @@ import React from 'react';
 
 const ContactBanner: React.FC = () => {
   return (
-    <section className="relative h-72 bg-[url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center flex items-center justify-center">
+    <section className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] h-72 bg-[url('https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center flex items-center justify-center">
       <div className="absolute inset-0 bg-white/40 backdrop-blur-sm"></div>
       <div className="relative text-center">
         <span className="material-icons text-primary text-4xl mb-2">contact_support</span>

@@ -2,10 +2,10 @@ import React from 'react';
 
 const AboutHero: React.FC = () => {
   return (
-    <section className="relative h-96 bg-accent-beige dark:bg-surface-dark flex flex-col justify-center items-center overflow-hidden">
-      <div className="absolute inset-0 opacity-20">
+    <section className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] h-72 bg-accent-beige dark:bg-surface-dark flex flex-col justify-center items-center overflow-hidden">
+      <div className="absolute inset-0 opacity-30">
         <img
-          src="https://images.unsplash.com/photo-1600585152915-d208bec86d26?auto=format&fit=crop&w=1920&q=80"
+          src="https://images.unsplash.com/photo-1578500494198-246f612d03b3?auto=format&fit=crop&w=1920&q=80"
           className="w-full h-full object-cover"
           alt="About MarbleLux"
         />

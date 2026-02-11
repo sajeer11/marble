@@ -1,0 +1,90 @@
+// This is your Prisma schema file.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Products in your marble/stone collection
+model Product {
+  id            Int     @id @default(autoincrement())
+  name          String  @db.VarChar(255)
+  category      String  @db.VarChar(100)
+  price         Decimal @db.Decimal(10, 2)
+  originalPrice Decimal? @db.Decimal(10, 2)
+  description   String  @db.Text
+  image         String?
+  tag           String? @db.VarChar(50)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([category])
+  @@index([createdAt])
+}
+
+// Product categories
+model Category {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique @db.VarChar(100)
+  slug        String  @unique @db.VarChar(100)
+  image       String?
+  description String? @db.Text
+  enabled     Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+}
+
+// Customer orders
+model Order {
+  id            Int      @id @default(autoincrement())
+  customerName  String   @db.VarChar(255)
+  email         String   @db.VarChar(255)
+  phone         String?  @db.VarChar(20)
+  status        String   @db.VarChar(50) @default("pending")
+  totalAmount   Decimal  @db.Decimal(10, 2)
+  shippingAddress String? @db.Text
+  items         Json?    // Store order items as JSON
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Navigation menu links
+model NavLink {
+  id        Int     @id @default(autoincrement())
+  label     String  @db.VarChar(100)
+  path      String  @db.VarChar(255)
+  icon      String? @db.VarChar(50)
+  active    Boolean @default(true)
+  order     Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([order])
+}
+
+// Page sections configuration
+model PageSection {
+  id          Int     @id @default(autoincrement())
+  page        String  @db.VarChar(50) // "home", "shop", "about"
+  sectionId   String  @db.VarChar(100)
+  enabled     Boolean @default(true)
+  title       String  @db.VarChar(255)
+  description String? @db.Text
+  coverImage  String? @db.Text
+  settings    Json?   // Store flexible settings
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([page, sectionId])
+  @@index([page])
+}

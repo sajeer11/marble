@@ -1,4 +1,4 @@
-import HeroSection from '@/components/HeroSection';
+import HeroSlider from '@/components/HeroSlider';
 import CategoriesGrid from '@/components/CategoriesGrid';
 import FeaturedProducts from '@/components/FeaturedProducts';
 import FeatureIcons from '@/components/FeatureIcons';
@@ -13,7 +13,7 @@ export const metadata = {
 export default function Home() {
   return (
     <div className="flex flex-col">
-      <HeroSection />
+      <HeroSlider />
       <CategoriesGrid />
       <FeaturedProducts />
       <FeatureIcons />

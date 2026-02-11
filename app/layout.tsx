@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { CartProvider } from './CartContext';
+import { AdminAuthProvider } from '@/components/Admin/AdminAuthContext';
 
 export const metadata: Metadata = {
   title: 'MarbleLux | Premium Stone Surfaces',
@@ -54,9 +55,11 @@ export default function RootLayout({
         }} />
       </head>
       <body className="bg-white dark:bg-background-dark text-text-light dark:text-text-dark transition-colors">
-        <CartProvider>
-          {children}
-        </CartProvider>
+        <AdminAuthProvider>
+          <CartProvider>
+            {children}
+          </CartProvider>
+        </AdminAuthProvider>
       </body>
     </html>
   );

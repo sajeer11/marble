@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 const HeroSection: React.FC = () => {
   return (
-    <section className="relative h-[420px] sm:h-[520px] md:h-[720px] bg-accent-beige dark:bg-surface-dark overflow-hidden flex items-center justify-center">
+    <section className="relative w-full h-[420px] sm:h-[520px] md:h-[720px] bg-accent-beige dark:bg-surface-dark overflow-hidden flex items-center justify-center">
       <div className="absolute inset-0 z-0">
         <img
           alt="Luxury Marble Interior"

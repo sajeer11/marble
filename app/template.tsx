@@ -101,7 +101,7 @@ export default function RootTemplate({
       <div className="min-h-screen flex font-sans overflow-x-hidden">
         <div className="flex-1 flex flex-col">
           <Navbar />
-          <main className="flex-1 container mx-auto px-4 md:px-8">
+          <main className="flex-1 w-full flex flex-col">
             {children}
           </main>
           <Footer />
