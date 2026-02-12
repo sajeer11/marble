@@ -4,7 +4,7 @@ import { useState } from 'react';
 import ProductCard from '@/components/ProductCard';
 import { PRODUCTS } from '@/constants';
 
-export default function CategoryPage({ params }: { params: { name: string } }) {
+export default function CategoryPage({ params }: any) {
   const [filter, setFilter] = useState('All');
   
   const categoryName = decodeURIComponent(params.name);
