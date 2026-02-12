@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -51,13 +51,13 @@ export async function POST(request: Request) {
         const body = await request.json();
 
         // Update each setting
-        for (const [key, value] of Object.entries(body)) {
+        for (const [key, value] of Object.entries(body as Record<string, Prisma.InputJsonValue>)) {
             await prisma.siteSettings.upsert({
                 where: { key },
-                update: { value }, // store value directly as JSON
+                update: { value: value as Prisma.InputJsonValue }, // store value directly as JSON
                 create: {
                     key,
-                    value,
+                    value: value as Prisma.InputJsonValue,
                     category: 'store', // default category
                 },
             });

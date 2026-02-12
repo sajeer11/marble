@@ -25,7 +25,7 @@ function verify(token: string | undefined) {
 }
 
 export async function GET() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get('session')?.value;
   const payload = verify(token);
   if (!payload) {

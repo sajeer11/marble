@@ -9,7 +9,7 @@ interface PaginationProps {
 }
 
 export default function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
-    const pages = [];
+    const pages: number[] = [];
     const maxVisible = 5;
 
     // Calculate visible page range
