@@ -1,13 +1,43 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MOCK_USER, MOCK_ORDERS } from '../../constants';
+import { useUserAuth } from '@/contexts/UserAuthContext';
 import OrderRow from './Orderrow';
 
 const Dashboard: React.FC = () => {
   const router = useRouter();
+  const { user, isLoggedIn } = useUserAuth();
+  const [profile, setProfile] = useState<any | null>(null);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!isLoggedIn || !user?.email) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const pid = typeof user.id === 'number' ? user.id : parseInt(String(user.id));
+        const pRes = await fetch(`/api/user/profile?userId=${pid}`);
+        if (pRes.ok) {
+          const pData = await pRes.json();
+          setProfile(pData);
+        }
+      } catch {}
+      try {
+        const oRes = await fetch(`/api/checkout?email=${encodeURIComponent(user.email)}`);
+        if (oRes.ok) {
+          const oData = await oRes.json();
+          setOrders(oData);
+        }
+      } catch {}
+      setLoading(false);
+    };
+    load();
+  }, [isLoggedIn, user?.email, user?.id]);
 
   return (
     <div className="flex flex-col gap-10 animate-fadeIn max-w-7xl mx-auto px-4 md:px-0">
@@ -16,7 +46,7 @@ const Dashboard: React.FC = () => {
       <div className="flex flex-col md:flex-row items-center md:items-end justify-between gap-6">
         <div className="flex flex-col gap-3 items-center md:items-start text-center md:text-left">
           <h1 className="text-slate-900 text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight font-display">
-            Welcome back, {MOCK_USER.name.split(' ')[0]}
+            Welcome back, {(profile?.firstName || user?.name || '').split(' ')[0]}
           </h1>
           <p className="text-slate-500 text-lg max-w-xl font-normal leading-relaxed">
             Manage your profile, track your premium marble shipments, and view your curated order history.
@@ -38,19 +68,19 @@ const Dashboard: React.FC = () => {
           <div className="flex gap-4 md:gap-6 items-center flex-1">
             <div 
               className="bg-center bg-no-repeat aspect-square bg-cover rounded-2xl h-16 w-16 sm:h-20 sm:w-20 md:h-28 md:w-28 ring-1 ring-slate-100" 
-              style={{ backgroundImage: `url("${MOCK_USER.avatar}")` }}
+              style={{ backgroundImage: `url("${profile?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=MarbleLux'}")` }}
             />
             <div className="flex flex-col gap-2 items-center md:items-start text-center md:text-left min-w-0">
-              <h2 className="text-slate-900 text-lg sm:text-2xl md:text-3xl font-bold tracking-tight truncate">{MOCK_USER.name}</h2>
+              <h2 className="text-slate-900 text-lg sm:text-2xl md:text-3xl font-bold tracking-tight truncate">{profile ? `${profile.firstName} ${profile.lastName}` : (user?.name || '')}</h2>
               <div className="flex flex-col md:flex-row md:items-center text-slate-500 text-sm gap-2 md:gap-4 flex-wrap">
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-[18px] text-slate-400">mail</span>
-                  <span className="font-medium truncate">{MOCK_USER.email}</span>
+                  <span className="font-medium truncate">{profile?.email || user?.email}</span>
                 </div>
                 <div className="hidden md:block w-1 h-1 rounded-full bg-slate-300"></div>
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-[18px] text-slate-400">calendar_today</span>
-                  <span className="font-medium">Member since {MOCK_USER.membershipDate}</span>
+                  <span className="font-medium">Member since {profile?.membershipDate || ''}</span>
                 </div>
               </div>
             </div>
@@ -69,9 +99,9 @@ const Dashboard: React.FC = () => {
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {[
-          { icon: 'local_shipping', label: 'Active Shipments', value: '02', color: 'text-slate-900' },
-          { icon: 'shopping_bag', label: 'Total Orders', value: '14', color: 'text-slate-900' },
-          { icon: 'workspace_premium', label: 'Reward Points', value: '4,250', color: 'text-accent-green' },
+          { icon: 'local_shipping', label: 'Active Shipments', value: String(orders.filter(o => ['Processing','Shipped','In Transit'].includes(o.status)).length).padStart(2, '0'), color: 'text-slate-900' },
+          { icon: 'shopping_bag', label: 'Total Orders', value: String(orders.length).padStart(2, '0'), color: 'text-slate-900' },
+          { icon: 'workspace_premium', label: 'Reward Points', value: String(Math.round(orders.reduce((t, o) => t + Number(o.totalAmount || 0), 0) / 10)).replace(/\B(?=(\d{3})+(?!\d))/g, ','), color: 'text-accent-green' },
         ].map((stat, i) => (
           <div key={i} className="bg-white p-5 sm:p-7 rounded-2xl border border-border-soft flex flex-col gap-4 items-center md:items-start text-center md:text-left custom-shadow hover:scale-[1.02] transition-transform">
             <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-900 border border-slate-100">
@@ -89,7 +119,7 @@ const Dashboard: React.FC = () => {
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between px-2">
           <h2 className="text-slate-900 text-xl font-bold font-display">Recent Orders</h2>
-          <button className="text-slate-900 text-sm font-bold hover:text-accent-green transition-colors flex items-center gap-1">
+          <button onClick={() => router.push('/orders')} className="text-slate-900 text-sm font-bold hover:text-accent-green transition-colors flex items-center gap-1">
             View All Orders <span className="material-symbols-outlined text-[18px]">chevron_right</span>
           </button>
         </div>
@@ -108,7 +138,7 @@ const Dashboard: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {MOCK_ORDERS.slice(0, 3).map((order) => (
+              {orders.slice(0, 3).map((order) => (
                 <OrderRow key={order.id} order={order} />
               ))}
             </tbody>
@@ -117,17 +147,17 @@ const Dashboard: React.FC = () => {
 
         {/* Mobile Cards */}
         <div className="block md:hidden space-y-4 pb-4">
-          {MOCK_ORDERS.slice(0, 3).map((order) => (
+          {orders.slice(0, 3).map((order) => (
             <div key={order.id} className="bg-white border border-border-soft rounded-2xl p-4 flex items-start justify-between gap-4 min-w-0">
               <div className="flex items-start gap-3 flex-1 min-w-0">
                 <div className="flex -space-x-2 flex-shrink-0">
-                  {order.products.slice(0, 3).map((p) => (
+                  {(order.products || []).slice(0, 3).map((p: any) => (
                     <div key={p.id} className="h-10 w-10 rounded-lg border bg-cover bg-center" style={{ backgroundImage: `url('${p.image}')` }} />
                   ))}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-bold text-slate-900 truncate">{order.id}</p>
-                  <p className="text-xs text-slate-500 truncate">{order.date} • ${order.amount.toLocaleString()}</p>
+                  <p className="text-sm font-bold text-slate-900 truncate">#{order.id}</p>
+                  <p className="text-xs text-slate-500 truncate">{new Date(order.createdAt).toLocaleString()} • ${Number(order.totalAmount || 0).toLocaleString()}</p>
                 </div>
               </div>
               <div className="flex flex-col items-end gap-3">
@@ -137,7 +167,7 @@ const Dashboard: React.FC = () => {
                   order.status === 'Processing' ? 'bg-blue-50 text-blue-700 border-blue-100' :
                   'bg-slate-50 text-slate-700 border-slate-100'
                 }`}>{order.status}</span>
-                <Link href={`/track/${order.id.replace('#', '')}`} className="text-slate-300 hover:text-primary">
+                <Link href={`/track/${order.id}`} className="text-slate-300 hover:text-primary">
                   <span className="material-symbols-outlined">arrow_forward</span>
                 </Link>
               </div>

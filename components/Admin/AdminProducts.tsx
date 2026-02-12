@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getCategories } from '@/lib/adminDataManager';
 import type { Product } from '@/types';
 
 type ProductForm = Omit<Product, 'id'> & { id?: string };
@@ -34,17 +33,28 @@ export default function AdminProducts() {
   // Load products from database
   useEffect(() => {
     loadProducts();
-    const loadedCategories = getCategories();
-    setCategories(loadedCategories);
+    loadCategories();
   }, []);
+
+  const loadCategories = async () => {
+    try {
+      const response = await fetch('/api/categories');
+      if (!response.ok) throw new Error('Failed to fetch categories');
+      const data = await response.json();
+      setCategories(data);
+    } catch (err: any) {
+      console.error('Error loading categories:', err);
+    }
+  };
 
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/products');
+      const response = await fetch('/api/products?limit=100');
       if (!response.ok) throw new Error('Failed to fetch products');
       const data = await response.json();
-      setProducts(data);
+      // API now returns { products: [], pagination: {} }
+      setProducts(data.products || []);
       setError(null);
     } catch (err: any) {
       setError(err.message);
@@ -66,7 +76,6 @@ export default function AdminProducts() {
         originalPrice: formData.originalPrice || null,
         description: formData.description,
         image: formData.image || null,
-        tag: formData.tag || null,
       };
 
       if (editingId) {
@@ -101,14 +110,14 @@ export default function AdminProducts() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
-    
+
     try {
       setLoading(true);
       const response = await fetch(`/api/products/${id}`, {
         method: 'DELETE',
       });
       if (!response.ok) throw new Error('Failed to delete product');
-      
+
       // Reload products
       await loadProducts();
     } catch (err: any) {
@@ -168,7 +177,7 @@ export default function AdminProducts() {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
             {editingId ? 'Edit Product' : 'Add New Product'}
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
               type="text"

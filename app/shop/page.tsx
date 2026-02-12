@@ -2,46 +2,74 @@
 
 import { useState, useEffect } from 'react';
 import ProductCard from '@/components/ProductCard';
+import Pagination from '@/components/Pagination';
 
 export default function Shop() {
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
-  const [filter, setFilter] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadProductsAndCategories = async () => {
-      try {
-        setLoading(true);
-        const [productsRes, categoriesRes] = await Promise.all([
-          fetch('/api/products'),
-          fetch('/api/categories'),
-        ]);
-        
-        if (productsRes.ok) {
-          const productsData = await productsRes.json();
-          setProducts(productsData);
-        }
-        
-        if (categoriesRes.ok) {
-          const categoriesData = await categoriesRes.json();
-          setCategories(categoriesData);
-        }
-      } catch (error) {
-        console.error('Error loading data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const perPage = 12;
 
-    loadProductsAndCategories();
-    const interval = setInterval(loadProductsAndCategories, 3000); // Refresh every 3 seconds
-    return () => clearInterval(interval);
+  useEffect(() => {
+    loadCategories();
   }, []);
 
-  const filteredProducts = filter === 'All' 
-    ? products 
-    : products.filter(p => p.category === filter);
+  useEffect(() => {
+    loadProducts();
+  }, [currentPage, selectedCategory]);
+
+  const loadCategories = async () => {
+    try {
+      const res = await fetch('/api/categories');
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(data);
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
+  };
+
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: perPage.toString(),
+        ...(selectedCategory !== 'all' && { category: selectedCategory }),
+      });
+
+      const res = await fetch(`/api/products?${params}`);
+      if (res.ok) {
+        const data = await res.json();
+        setProducts(data.products);
+        setTotalPages(data.pagination.totalPages);
+        setTotalProducts(data.pagination.total);
+      }
+    } catch (error) {
+      console.error('Error loading products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    setCurrentPage(1); // Reset to first page
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const startIndex = (currentPage - 1) * perPage + 1;
+  const endIndex = Math.min(currentPage * perPage, totalProducts);
 
   return (
     <div className="flex flex-col">
@@ -60,50 +88,60 @@ export default function Shop() {
 
       {/* Toolbar */}
       <div className="bg-accent-beige dark:bg-surface-dark py-6 mb-12 border-b border-gray-100 dark:border-gray-800">
-        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-6">
-            <button className="flex items-center gap-2 font-medium hover:text-primary transition-colors">
-              <span className="material-icons-outlined">tune</span> Filter
-            </button>
-            <div className="flex gap-4">
-              <button className="material-icons-outlined text-primary">grid_view</button>
-              <button className="material-icons-outlined text-gray-400">view_list</button>
-            </div>
-            <div className="h-8 w-px bg-gray-300 dark:bg-gray-700 hidden sm:block"></div>
-            <p className="text-sm">Showing 1–{filteredProducts.length} of {filteredProducts.length} results</p>
-          </div>
-          <div className="flex items-center gap-6">
+        <div className="container mx-auto px-4 sm:px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex flex-wrap items-center gap-4 md:gap-6 justify-center md:justify-start">
+            {/* Category Filter */}
             <div className="flex items-center gap-2">
-              <span className="text-sm">Show</span>
-              <input type="text" value="16" className="w-12 h-10 text-center text-sm border-none bg-white dark:bg-surface-dark focus:ring-1 focus:ring-primary" readOnly />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm">Sort by</span>
-              <select className="h-10 text-sm border-none bg-white dark:bg-surface-dark focus:ring-1 focus:ring-primary pl-4 pr-10">
-                <option>Default</option>
-                <option>Price: Low to High</option>
-                <option>Price: High to Low</option>
+              <span className="material-icons-outlined">tune</span>
+              <select
+                value={selectedCategory}
+                onChange={(e) => handleCategoryChange(e.target.value)}
+                className="h-10 text-sm border-none bg-white dark:bg-gray-800 focus:ring-1 focus:ring-primary pl-4 pr-10 rounded-lg"
+              >
+                <option value="all">All Categories</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.name}>{cat.name}</option>
+                ))}
               </select>
             </div>
+
+            <div className="h-8 w-px bg-gray-300 dark:bg-gray-700 hidden sm:block"></div>
+            <p className="text-sm">
+              Showing {totalProducts === 0 ? 0 : startIndex}–{endIndex} of {totalProducts} results
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="container mx-auto px-6 pb-24">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {filteredProducts.map(p => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
-        
-        {/* Pagination */}
-        <div className="flex justify-center mt-16 gap-4">
-          <button className="w-12 h-12 flex items-center justify-center rounded bg-primary text-white font-medium">1</button>
-          <button className="w-12 h-12 flex items-center justify-center rounded bg-accent-beige dark:bg-surface-dark hover:bg-primary hover:text-white transition-colors">2</button>
-          <button className="w-12 h-12 flex items-center justify-center rounded bg-accent-beige dark:bg-surface-dark hover:bg-primary hover:text-white transition-colors">3</button>
-          <button className="w-20 h-12 flex items-center justify-center rounded bg-accent-beige dark:bg-surface-dark hover:bg-primary hover:text-white transition-colors">Next</button>
-        </div>
+      {/* Products Grid */}
+      <div className="container mx-auto px-4 sm:px-6 pb-24">
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        ) : products.length === 0 ? (
+          <div className="text-center py-20">
+            <span className="material-icons text-6xl text-gray-400 mb-4">inventory_2</span>
+            <p className="text-xl text-gray-600 dark:text-gray-400">No products found</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+              {products.map(p => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            )}
+          </>
+        )}
       </div>
     </div>
   );

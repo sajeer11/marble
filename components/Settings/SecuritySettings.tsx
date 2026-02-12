@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useUserAuth } from '@/contexts/UserAuthContext';
 
 export default function SecuritySettings() {
+  const { user, isLoggedIn, logout } = useUserAuth();
   const [passwords, setPasswords] = useState({
     currentPassword: '',
     newPassword: '',
@@ -34,13 +36,35 @@ export default function SecuritySettings() {
     return true;
   };
 
-  const handleSavePassword = () => {
-    if (validatePassword()) {
+  const handleSavePassword = async () => {
+    if (!validatePassword()) return;
+    if (!isLoggedIn || !user?.id) {
+      setPasswordError('Please login to update password');
+      return;
+    }
+    const pid = typeof user.id === 'number' ? user.id : parseInt(String(user.id));
+    try {
+      const res = await fetch('/api/user/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: pid,
+          currentPassword: passwords.currentPassword,
+          newPassword: passwords.newPassword,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setPasswordError(err.error || 'Failed to update password');
+        return;
+      }
       setPasswordSuccess(true);
       setTimeout(() => {
         setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
         setPasswordSuccess(false);
       }, 3000);
+    } catch {
+      setPasswordError('Network error. Try again.');
     }
   };
 

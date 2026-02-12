@@ -1,23 +1,118 @@
 'use client';
-
-import React from 'react';
-import { MOCK_ORDERS } from '@/constants';
+import React, { useEffect, useMemo, useState } from 'react';
 
 export default function AdminAnalytics() {
-  const totalRevenue = MOCK_ORDERS.reduce((sum, o) => sum + o.amount, 0);
-  const avgOrderValue = totalRevenue / MOCK_ORDERS.length;
-  const deliveredOrders = MOCK_ORDERS.filter(o => o.status === 'Delivered').length;
-  const processingOrders = MOCK_ORDERS.filter(o => o.status === 'Processing').length;
+  const [orders, setOrders] = useState<Array<{ id: number; totalAmount: number; status: string; createdAt: string }>>([]);
+  const [loading, setLoading] = useState(true);
 
-  const revenueData = [
-    { month: 'Jun', revenue: 4200 },
-    { month: 'Jul', revenue: 5800 },
-    { month: 'Aug', revenue: 4800 },
-    { month: 'Sep', revenue: 3200 },
-    { month: 'Oct', revenue: 6100 },
-  ];
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/orders');
+        if (res.ok) {
+          const data = await res.json();
+          setOrders(data || []);
+        }
+      } catch {}
+      setLoading(false);
+    };
+    load();
+  }, []);
 
-  const maxRevenue = Math.max(...revenueData.map(d => d.revenue));
+  const totalRevenue = useMemo(
+    () => orders.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0),
+    [orders]
+  );
+  const avgOrderValue = useMemo(
+    () => (orders.length ? totalRevenue / orders.length : 0),
+    [orders, totalRevenue]
+  );
+  const deliveredOrders = useMemo(
+    () => orders.filter(o => o.status === 'Delivered').length,
+    [orders]
+  );
+  const processingOrders = useMemo(
+    () => orders.filter(o => o.status === 'Processing').length,
+    [orders]
+  );
+  const successRate = useMemo(
+    () => (orders.length ? (deliveredOrders / orders.length) * 100 : 0),
+    [orders, deliveredOrders]
+  );
+
+  const monthKey = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  };
+  const monthLabel = (key: string) => {
+    const [y, m] = key.split('-').map(Number);
+    const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${names[m - 1]} ${String(y).slice(-2)}`;
+  };
+  const lastNMonths = (n: number) => {
+    const now = new Date();
+    const arr: string[] = [];
+    for (let i = n - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      arr.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+    }
+    return arr;
+  };
+  const revenueByMonthMap = useMemo(() => {
+    const map = new Map<string, number>();
+    orders.forEach(o => {
+      const key = monthKey(o.createdAt);
+      map.set(key, (map.get(key) || 0) + Number(o.totalAmount || 0));
+    });
+    return map;
+  }, [orders]);
+  const revenueMonths = useMemo(() => lastNMonths(5), []);
+  const revenueData = useMemo(
+    () => revenueMonths.map(key => ({ month: monthLabel(key), revenue: revenueByMonthMap.get(key) || 0 })),
+    [revenueMonths, revenueByMonthMap]
+  );
+  const maxRevenue = useMemo(
+    () => Math.max(1, ...revenueData.map(d => d.revenue)),
+    [revenueData]
+  );
+
+  const statusDistribution = useMemo(() => {
+    const counts: Record<string, number> = {};
+    orders.forEach(o => {
+      counts[o.status] = (counts[o.status] || 0) + 1;
+    });
+    const total = orders.length || 1;
+    const colors: Record<string, string> = {
+      Delivered: 'bg-green-500',
+      Processing: 'bg-yellow-500',
+      'In Transit': 'bg-blue-500',
+      Shipped: 'bg-indigo-500',
+      pending: 'bg-gray-500',
+    };
+    return Object.entries(counts).map(([status, count]) => ({
+      status,
+      count,
+      percent: ((count / total) * 100).toFixed(0),
+      color: colors[status] || 'bg-gray-500',
+    }));
+  }, [orders]);
+
+  const weekdayName = (d: Date) => ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()];
+  const topDays = useMemo(() => {
+    const map = new Map<string, { orders: number; revenue: number }>();
+    orders.forEach(o => {
+      const day = weekdayName(new Date(o.createdAt));
+      const entry = map.get(day) || { orders: 0, revenue: 0 };
+      entry.orders += 1;
+      entry.revenue += Number(o.totalAmount || 0);
+      map.set(day, entry);
+    });
+    return Array.from(map.entries())
+      .map(([day, v]) => ({ day, orders: v.orders, revenue: v.revenue }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5);
+  }, [orders]);
 
   return (
     <div className="p-8 space-y-8">
@@ -59,7 +154,7 @@ export default function AdminAnalytics() {
             <div>
               <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Orders Delivered</p>
               <p className="text-3xl font-bold text-gray-900 dark:text-white">{deliveredOrders}</p>
-              <p className="text-xs text-green-600 dark:text-green-400 mt-2">Success Rate: {(deliveredOrders / MOCK_ORDERS.length * 100).toFixed(0)}%</p>
+              <p className="text-xs text-green-600 dark:text-green-400 mt-2">Success Rate: {successRate.toFixed(0)}%</p>
             </div>
             <div className="p-4 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
               <span className="material-icons text-3xl">check_circle</span>
@@ -106,11 +201,7 @@ export default function AdminAnalytics() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Order Status Distribution</h2>
           <div className="space-y-4">
-            {[
-              { status: 'Delivered', count: deliveredOrders, color: 'bg-green-500', percent: (deliveredOrders / MOCK_ORDERS.length * 100).toFixed(0) },
-              { status: 'Processing', count: processingOrders, color: 'bg-yellow-500', percent: (processingOrders / MOCK_ORDERS.length * 100).toFixed(0) },
-              { status: 'In Transit', count: MOCK_ORDERS.filter(o => o.status === 'In Transit').length, color: 'bg-blue-500', percent: ((MOCK_ORDERS.filter(o => o.status === 'In Transit').length / MOCK_ORDERS.length) * 100).toFixed(0) },
-            ].map((item, idx) => (
+            {statusDistribution.map((item, idx) => (
               <div key={idx}>
                 <div className="flex justify-between mb-2">
                   <span className="font-semibold text-gray-700 dark:text-gray-300">{item.status}</span>
@@ -127,19 +218,13 @@ export default function AdminAnalytics() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Top Performing Days</h2>
           <div className="space-y-3">
-            {[
-              { day: 'Monday', orders: 3, revenue: 8200 },
-              { day: 'Tuesday', orders: 2, revenue: 5600 },
-              { day: 'Wednesday', orders: 4, revenue: 12400 },
-              { day: 'Thursday', orders: 1, revenue: 3200 },
-              { day: 'Friday', orders: 2, revenue: 6100 },
-            ].map((day, idx) => (
+            {topDays.map((day, idx) => (
               <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <div>
                   <p className="font-semibold text-gray-900 dark:text-white">{day.day}</p>
                   <p className="text-xs text-gray-600 dark:text-gray-400">{day.orders} orders</p>
                 </div>
-                <p className="font-bold text-gray-900 dark:text-white">${day.revenue}</p>
+                <p className="font-bold text-gray-900 dark:text-white">${day.revenue.toLocaleString()}</p>
               </div>
             ))}
           </div>
@@ -147,32 +232,7 @@ export default function AdminAnalytics() {
       </div>
 
       {/* Export Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Export Reports</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-all">
-            <div className="flex items-center gap-3">
-              <span className="material-icons text-red-600">picture_as_pdf</span>
-              <span className="font-semibold text-gray-900 dark:text-white">Export as PDF</span>
-            </div>
-            <span className="material-icons text-gray-400">arrow_forward</span>
-          </button>
-          <button className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-all">
-            <div className="flex items-center gap-3">
-              <span className="material-icons text-green-600">table_chart</span>
-              <span className="font-semibold text-gray-900 dark:text-white">Export as CSV</span>
-            </div>
-            <span className="material-icons text-gray-400">arrow_forward</span>
-          </button>
-          <button className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-all">
-            <div className="flex items-center gap-3">
-              <span className="material-icons text-blue-600">file_download</span>
-              <span className="font-semibold text-gray-900 dark:text-white">Export as Excel</span>
-            </div>
-            <span className="material-icons text-gray-400">arrow_forward</span>
-          </button>
-        </div>
-      </div>
+     
     </div>
   );
 }

@@ -1,27 +1,63 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function AdminSettings() {
   const [settings, setSettings] = useState({
-    siteName: 'MarbleLux',
-    siteEmail: 'admin@marblelux.com',
-    taxRate: 10,
-    shippingCost: 50,
-    freeShippingThreshold: 500,
+    siteName: '',
+    siteEmail: '',
+    taxRate: 0,
+    shippingCost: 0,
+    freeShippingThreshold: 0,
     currency: 'USD',
     maintenanceMode: false,
     allowNewRegistrations: true,
   });
 
   const [emailSettings, setEmailSettings] = useState({
-    smtpServer: 'mail.marblelux.com',
-    smtpPort: '587',
-    fromEmail: 'noreply@marblelux.com',
-    fromName: 'MarbleLux Admin',
+    smtpServer: '',
+    smtpPort: '',
+    fromEmail: '',
+    fromName: '',
   });
 
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const response = await fetch('/api/settings');
+      if (!response.ok) throw new Error('Failed to fetch settings');
+      const data = await response.json();
+
+      setSettings({
+        siteName: data.siteName || '',
+        siteEmail: data.siteEmail || '',
+        taxRate: data.taxRate || 0,
+        shippingCost: data.shippingCost || 0,
+        freeShippingThreshold: data.freeShippingThreshold || 0,
+        currency: data.currency || 'USD',
+        maintenanceMode: data.maintenanceMode || false,
+        allowNewRegistrations: data.allowNewRegistrations || true,
+      });
+
+      setEmailSettings({
+        smtpServer: data.smtpServer || '',
+        smtpPort: data.smtpPort || '',
+        fromEmail: data.fromEmail || '',
+        fromName: data.fromName || '',
+      });
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Error loading settings:', error);
+      setLoading(false);
+    }
+  };
 
   const handleSettingChange = (key: string, value: any) => {
     setSettings(prev => ({ ...prev, [key]: value }));
@@ -31,9 +67,23 @@ export default function AdminSettings() {
     setEmailSettings(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  const handleSave = async () => {
+    try {
+      const allSettings = { ...settings, ...emailSettings };
+      const response = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(allSettings),
+      });
+
+      if (!response.ok) throw new Error('Failed to save settings');
+
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      alert('Failed to save settings');
+    }
   };
 
   return (

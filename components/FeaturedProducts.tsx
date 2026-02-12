@@ -11,10 +11,11 @@ const FeaturedProducts: React.FC = () => {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const response = await fetch('/api/products');
+        const response = await fetch('/api/products?limit=8');
         if (response.ok) {
           const data = await response.json();
-          setProducts(data.slice(0, 4));
+          // API now returns { products, pagination }
+          setProducts(data.products || []);
         }
       } catch (error) {
         console.error('Error loading products:', error);
@@ -24,8 +25,6 @@ const FeaturedProducts: React.FC = () => {
     };
 
     loadProducts();
-    const interval = setInterval(loadProducts, 3000); // Refresh every 3 seconds for real-time updates
-    return () => clearInterval(interval);
   }, []);
 
   if (loading) {

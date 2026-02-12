@@ -1,11 +1,34 @@
-import Link from 'next/link';
+'use client';
 
-export const metadata = {
-  title: 'Login | MarbleLux',
-  description: 'Login to your MarbleLux account',
-};
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useUserAuth } from '@/contexts/UserAuthContext';
 
 export default function Login() {
+  const router = useRouter();
+  const { login } = useUserAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    const success = await login(email, password);
+    if (success) {
+      router.push('/');
+    } else {
+      setError('Invalid email or password');
+      setPassword('');
+    }
+    setIsLoading(false);
+  };
+
   return (
     <div className="flex flex-1 min-h-screen">
       {/* Left: Content */}
@@ -15,13 +38,28 @@ export default function Login() {
             <h1 className="text-4xl font-bold font-display text-gray-900 dark:text-white mb-2">Welcome Back</h1>
             <p className="text-gray-500 dark:text-gray-400">Access your exclusive stone collection.</p>
           </div>
-          
-          <form className="space-y-6">
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg flex items-center gap-3">
+                <span className="material-icons text-sm">error</span>
+                <p className="text-sm font-medium">{error}</p>
+              </div>
+            )}
+
             <div className="space-y-2">
               <label className="text-sm font-semibold dark:text-white">Email Address</label>
               <div className="relative">
                 <span className="material-icons-outlined absolute left-4 top-4 text-gray-400">mail</span>
-                <input type="email" placeholder="you@example.com" className="w-full h-14 pl-12 rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary transition-all" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full h-14 pl-12 rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary transition-all"
+                  disabled={isLoading}
+                  required
+                />
               </div>
             </div>
             <div className="space-y-2">
@@ -31,15 +69,33 @@ export default function Login() {
               </div>
               <div className="relative">
                 <span className="material-icons-outlined absolute left-4 top-4 text-gray-400">lock</span>
-                <input type="password" placeholder="••••••••" className="w-full h-14 pl-12 pr-12 rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary transition-all" />
-                <button className="absolute right-4 top-4 text-gray-400 hover:text-primary">
-                  <span className="material-symbols-outlined text-[20px]">visibility_off</span>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full h-14 pl-12 pr-12 rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark focus:ring-primary focus:border-primary transition-all"
+                  disabled={isLoading}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-4 text-gray-400 hover:text-primary"
+                >
+                  <span className="material-symbols-outlined text-[20px]">
+                    {showPassword ? 'visibility' : 'visibility_off'}
+                  </span>
                 </button>
               </div>
             </div>
-            
-            <button className="w-full h-14 bg-primary hover:bg-primary-dark text-white font-bold rounded-lg shadow-lg transition-all active:scale-95">
-              Login
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full h-14 bg-primary hover:bg-primary-dark disabled:bg-gray-400 text-white font-bold rounded-lg shadow-lg transition-all active:scale-95"
+            >
+              {isLoading ? 'Logging in...' : 'Login'}
             </button>
           </form>
 

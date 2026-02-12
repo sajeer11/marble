@@ -1,10 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 
-export async function GET(request: NextRequest) {
+const prisma = new PrismaClient();
+
+export async function GET() {
   try {
     const categories = await prisma.category.findMany({
-      orderBy: { createdAt: 'desc' },
+      where: { enabled: true },
+      orderBy: { name: 'asc' },
     });
     return NextResponse.json(categories);
   } catch (error) {
@@ -16,18 +19,26 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+// POST - Create new category
+export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, slug, image, description, enabled } = body;
+    const { name, slug, description, image, enabled } = body;
+
+    if (!name || !slug) {
+      return NextResponse.json(
+        { error: 'Name and slug are required' },
+        { status: 400 }
+      );
+    }
 
     const category = await prisma.category.create({
       data: {
         name,
-        slug: slug || name.toLowerCase().replace(/\s+/g, '-'),
-        image: image || null,
-        description: description || null,
-        enabled: enabled !== false,
+        slug,
+        description,
+        image,
+        enabled: enabled ?? true,
       },
     });
 

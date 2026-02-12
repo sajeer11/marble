@@ -1,23 +1,57 @@
 
 'use client';
 
-import React, { useState } from 'react';
-import { MOCK_USER, MOCK_ORDERS } from '../../constants';
-
+import React, { useEffect, useState } from 'react';
+import { useUserAuth } from '@/contexts/UserAuthContext';
 import OrderRow from './Orderrow';
+
+interface Order {
+  id: number;
+  createdAt: string;
+  totalAmount: number;
+  status: string;
+  items?: any;
+}
 
 const MyOrders: React.FC = () => {
   const [activeTab, setActiveTab] = useState('All');
-  
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user, isLoggedIn } = useUserAuth();
+
+  useEffect(() => {
+    const load = async () => {
+      if (!isLoggedIn || !user?.email) {
+        setOrders([]);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/checkout?email=${encodeURIComponent(user.email)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setOrders(data);
+        } else {
+          setOrders([]);
+        }
+      } catch {
+        setOrders([]);
+      }
+      setLoading(false);
+    };
+    load();
+  }, [isLoggedIn, user?.email, activeTab]);
+
   const filteredOrders = activeTab === 'All' 
-    ? MOCK_ORDERS 
-    : MOCK_ORDERS.filter(o => o.status.toLowerCase().includes(activeTab.toLowerCase()));
+    ? orders 
+    : orders.filter(o => o.status.toLowerCase().includes(activeTab.toLowerCase()));
 
   return (
     <div className="flex flex-col gap-8 animate-fadeIn">
       <div className="flex flex-col gap-2">
         <h1 className="text-slate-900 text-4xl font-black leading-tight tracking-[-0.033em]">My Orders</h1>
-        <p className="text-slate-500 text-base font-normal">Manage and track your premium marble acquisitions and custom installations.</p>
+        <p className="text-slate-500 text-base font-normal">Manage and track your orders.</p>
       </div>
 
       <div className="border-b border-slate-200 overflow-x-auto scrollbar-hide">
@@ -50,31 +84,33 @@ const MyOrders: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredOrders.length > 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="px-8 py-20 text-center text-slate-400">Loading...</td>
+                </tr>
+              ) : filteredOrders.length > 0 ? (
                 filteredOrders.map(order => (
                   <tr key={order.id} className="hover:bg-slate-50 transition-colors group">
-                    <td className="px-8 py-6 text-slate-900 text-sm font-bold">{order.id}</td>
-                    <td className="px-8 py-6 text-slate-500 text-sm">{order.date}</td>
+                    <td className="px-8 py-6 text-slate-900 text-sm font-bold">#{order.id}</td>
+                    <td className="px-8 py-6 text-slate-500 text-sm">{new Date(order.createdAt).toLocaleString()}</td>
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 p-0.5">
-                          <img src={order.products[0].image} alt="" className="w-full h-full object-cover rounded shadow-inner" />
-                        </div>
-                        <span className="text-sm text-slate-700 font-medium">{order.summary}</span>
+                        <span className="text-sm text-slate-700 font-medium">Order items</span>
                       </div>
                     </td>
                     <td className="px-8 py-6">
                       <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ring-inset
                         ${order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 ring-emerald-700/10' : 
                           order.status === 'In Transit' ? 'bg-amber-50 text-amber-700 ring-amber-700/10' :
-                          'bg-blue-50 text-blue-700 ring-blue-700/10'}
+                          order.status === 'Processing' ? 'bg-blue-50 text-blue-700 ring-blue-700/10' :
+                          'bg-gray-50 text-gray-700 ring-gray-700/10'}
                       `}>
                         {order.status}
                       </span>
                     </td>
-                    <td className="px-8 py-6 text-slate-900 text-sm font-bold">${order.amount.toLocaleString()}</td>
+                    <td className="px-8 py-6 text-slate-900 text-sm font-bold">${Number(order.totalAmount).toLocaleString()}</td>
                     <td className="px-8 py-6 text-right">
-                      <button className="text-brand-blue hover:text-blue-800 text-sm font-bold transition-colors">Details</button>
+                      <a href={`/track/${order.id}`} className="text-brand-blue hover:text-blue-800 text-sm font-bold transition-colors">Track</a>
                     </td>
                   </tr>
                 ))
@@ -89,7 +125,7 @@ const MyOrders: React.FC = () => {
           </table>
         </div>
         <div className="px-8 py-4 bg-slate-50/50 border-t border-slate-200 flex items-center justify-between">
-          <p className="text-xs text-slate-500 font-medium">Showing {filteredOrders.length} of {MOCK_ORDERS.length} orders</p>
+          <p className="text-xs text-slate-500 font-medium">Showing {filteredOrders.length} of {orders.length} orders</p>
           <div className="flex gap-2">
             <button className="px-4 py-1.5 text-xs font-bold bg-white border border-slate-200 rounded text-slate-400 cursor-not-allowed" disabled>Previous</button>
             <button className="px-4 py-1.5 text-xs font-bold bg-white border border-slate-200 rounded text-slate-700 hover:border-brand-blue hover:text-brand-blue transition-colors">Next</button>

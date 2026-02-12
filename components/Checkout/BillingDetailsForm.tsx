@@ -78,8 +78,11 @@ const BillingDetailsForm: React.FC = () => {
     e.preventDefault();
     if (validateForm()) {
       setSubmitted(true);
-      console.log('Form submitted:', formData);
-      // Handle form submission here - you can save to localStorage or send to backend
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('marblelux_billing', JSON.stringify(formData));
+        } catch {}
+      }
     }
   };
 

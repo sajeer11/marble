@@ -1,9 +1,7 @@
 'use client';
-
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { PRODUCTS } from '@/constants';
 import { useCart } from '@/app/CartContext';
 import ProductBreadcrumb from '@/components/ProductBreadcrumb';
 import ProductGallery from '@/components/ProductGallery';
@@ -14,10 +12,37 @@ import RelatedProducts from '@/components/RelatedProducts';
 export default function ProductDetail() {
   const params = useParams();
   const id = params.id as string;
-  const product = PRODUCTS.find((p) => p.id === id);
+  const [product, setProduct] = useState<any | null>(null);
+  const [related, setRelated] = useState<any[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
   const { addToCart } = useCart();
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch(`/api/products/${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setProduct(data);
+        } else {
+          setProduct(null);
+        }
+      } catch {
+        setProduct(null);
+      }
+      try {
+        const rel = await fetch(`/api/products?limit=4`);
+        if (rel.ok) {
+          const data = await rel.json();
+          setRelated(data.products?.filter((p: any) => String(p.id) !== String(id))?.slice(0, 4) || []);
+        }
+      } catch {
+        setRelated([]);
+      }
+    };
+    load();
+  }, [id]);
 
   if (!product) {
     return (
@@ -30,26 +55,21 @@ export default function ProductDetail() {
     );
   }
 
-  const relatedProducts = PRODUCTS.filter((p) => p.id !== id).slice(0, 4);
-
   return (
     <div className="flex flex-col">
-      <ProductBreadcrumb product={product} />
-
+      <ProductBreadcrumb product={{ ...product, id: String(product.id) }} />
       <main className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           <ProductGallery image={product.image} tag={product.tag} />
           <ProductInfo
-            product={product}
+            product={{ ...product, id: String(product.id) }}
             quantity={quantity}
             setQuantity={setQuantity}
             addToCart={addToCart}
           />
         </div>
-
         <ProductTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-
-        <RelatedProducts relatedProducts={relatedProducts} />
+        <RelatedProducts relatedProducts={related} />
       </main>
     </div>
   );

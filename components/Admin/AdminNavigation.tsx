@@ -1,27 +1,49 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface NavLink {
-  id: string;
+  id?: number;
   label: string;
   path: string;
   icon?: string;
   active: boolean;
+  order?: number;
 }
 
 export default function AdminNavigation() {
-  const [navLinks, setNavLinks] = useState<NavLink[]>([
-    { id: '1', label: 'Home', path: '/', icon: 'home', active: true },
-    { id: '2', label: 'Shop', path: '/shop', icon: 'shopping_bag', active: true },
-    { id: '3', label: 'About', path: '/about', icon: 'info', active: true },
-    { id: '4', label: 'Contact', path: '/contact', icon: 'mail', active: true },
-  ]);
-
+  const [navLinks, setNavLinks] = useState<NavLink[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({ label: '', path: '', icon: '' });
   const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch('/api/navigation', { method: 'GET' });
+        if (res.ok) {
+          const data = await res.json();
+          setNavLinks(data);
+        } else {
+          setNavLinks([
+            { label: 'Home', path: '/', icon: 'home', active: true },
+            { label: 'Shop', path: '/shop', icon: 'shopping_bag', active: true },
+            { label: 'About', path: '/about', icon: 'info', active: true },
+            { label: 'Contact', path: '/contact', icon: 'mail', active: true },
+          ]);
+        }
+      } catch {
+        setNavLinks([
+          { label: 'Home', path: '/', icon: 'home', active: true },
+          { label: 'Shop', path: '/shop', icon: 'shopping_bag', active: true },
+          { label: 'About', path: '/about', icon: 'info', active: true },
+          { label: 'Contact', path: '/contact', icon: 'mail', active: true },
+        ]);
+      }
+    };
+    load();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -33,21 +55,34 @@ export default function AdminNavigation() {
 
   const handleSave = () => {
     if (!formData.label.trim() || !formData.path.trim()) return;
-
     if (editingId) {
-      setNavLinks(navLinks.map(link => 
-        link.id === editingId 
-          ? { ...link, label: formData.label, path: formData.path, icon: formData.icon }
-          : link
-      ));
+      const updated = navLinks.map(link =>
+        link.id === editingId ? { ...link, label: formData.label, path: formData.path, icon: formData.icon } : link
+      );
+      setNavLinks(updated);
+      fetch('/api/navigation', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editingId, label: formData.label, path: formData.path, icon: formData.icon }),
+      }).catch(() => {});
     } else {
-      setNavLinks([...navLinks, {
-        id: Date.now().toString(),
-        label: formData.label,
-        path: formData.path,
-        icon: formData.icon || 'link',
-        active: true,
-      }]);
+      const order = navLinks.length;
+      fetch('/api/navigation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ label: formData.label, path: formData.path, icon: formData.icon || 'link', active: true, order }),
+      })
+        .then(async (res) => {
+          if (res.ok) {
+            const created = await res.json();
+            setNavLinks([...navLinks, created]);
+          } else {
+            setNavLinks([...navLinks, { label: formData.label, path: formData.path, icon: formData.icon || 'link', active: true, order }]);
+          }
+        })
+        .catch(() => {
+          setNavLinks([...navLinks, { label: formData.label, path: formData.path, icon: formData.icon || 'link', active: true, order }]);
+        });
     }
     resetForm();
     setSaved(true);
@@ -56,30 +91,56 @@ export default function AdminNavigation() {
 
   const handleEdit = (link: NavLink) => {
     setFormData({ label: link.label, path: link.path, icon: link.icon || '' });
-    setEditingId(link.id);
+    setEditingId(link.id || null);
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    setNavLinks(navLinks.filter(link => link.id !== id));
+  const handleDelete = (id?: number) => {
+    if (typeof id !== 'number') return;
+    setNavLinks(navLinks.filter(link => (link.id || 0) !== id));
+    fetch(`/api/navigation?id=${id}`, { method: 'DELETE' }).catch(() => {});
   };
 
-  const toggleActive = (id: string) => {
-    setNavLinks(navLinks.map(link => 
-      link.id === id ? { ...link, active: !link.active } : link
-    ));
+  const toggleActive = (id?: number) => {
+    if (typeof id !== 'number') return;
+    const updated = navLinks.map(link =>
+      (link.id || 0) === id ? { ...link, active: !link.active } : link
+    );
+    setNavLinks(updated);
+    const target = updated.find(l => (l.id || 0) === id);
+    if (target) {
+      fetch('/api/navigation', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, active: target.active }),
+      }).catch(() => {});
+    }
   };
 
-  const moveLink = (id: string, direction: 'up' | 'down') => {
-    const index = navLinks.findIndex(link => link.id === id);
+  const moveLink = (id?: number, direction?: 'up' | 'down') => {
+    if (typeof id !== 'number' || !direction) return;
+    const index = navLinks.findIndex(link => (link.id || 0) === id);
     if ((direction === 'up' && index === 0) || (direction === 'down' && index === navLinks.length - 1)) {
       return;
     }
-
     const newLinks = [...navLinks];
     const swapIndex = direction === 'up' ? index - 1 : index + 1;
     [newLinks[index], newLinks[swapIndex]] = [newLinks[swapIndex], newLinks[index]];
     setNavLinks(newLinks);
+    const a = newLinks[index];
+    const b = newLinks[swapIndex];
+    if (a?.id && b?.id) {
+      fetch('/api/navigation', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: a.id, order: index }),
+      }).catch(() => {});
+      fetch('/api/navigation', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: b.id, order: swapIndex }),
+      }).catch(() => {});
+    }
   };
 
   const resetForm = () => {
@@ -91,7 +152,6 @@ export default function AdminNavigation() {
   const MATERIAL_ICONS = [
     'home', 'shopping_bag', 'info', 'mail', 'settings', 'person', 'search',
     'favorite', 'shopping_cart', 'menu', 'account_circle', 'logout', 'store',
-    'admin_panel_settings', 'dashboard', 'category', 'help', 'language',
   ];
 
   return (
@@ -295,4 +355,3 @@ export default function AdminNavigation() {
     </div>
   );
 }
- 6

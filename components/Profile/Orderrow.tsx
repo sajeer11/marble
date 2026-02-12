@@ -1,10 +1,9 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import Link from 'next/link';
-import { Order } from '@/types';
 
 interface OrderRowProps {
-  order: Order;
+  order: any;
 }
 
 const OrderRow: React.FC<OrderRowProps> = ({ order }) => {
@@ -21,14 +20,33 @@ const OrderRow: React.FC<OrderRowProps> = ({ order }) => {
     }
   };
 
+  const products = useMemo(() => {
+    if (Array.isArray(order?.products)) return order.products;
+    try {
+      const parsed = typeof order?.items === 'string' ? JSON.parse(order.items) : order?.items;
+      if (Array.isArray(parsed)) {
+        return parsed.map((it: any) => ({
+          id: it.productId || it.id || String(Math.random()),
+          name: it.name || 'Item',
+          image: it.image || `https://picsum.photos/seed/${encodeURIComponent(it.name || it.productId || 'item')}/80/80`,
+        }));
+      }
+    } catch {}
+    return [];
+  }, [order]);
+
+  const orderIdDisplay = `#${String(order?.id).replace('#', '')}`;
+  const dateDisplay = order?.date || (order?.createdAt ? new Date(order.createdAt).toLocaleDateString() : '');
+  const amountNumber = typeof order?.amount === 'number' ? order.amount : Number(order?.totalAmount || 0);
+
   return (
     <tr className="bg-white rounded-2xl overflow-hidden hover:shadow-md transition-all group border border-border-soft">
       <td className="px-4 py-4 sm:px-8 sm:py-6 rounded-l-2xl font-bold text-slate-900 text-sm">
-        {order.id}
+        {orderIdDisplay}
       </td>
       <td className="px-4 py-4 sm:px-8 sm:py-6">
         <div className="flex -space-x-3">
-          {order.products.map((p, i) => (
+          {products.slice(0, 3).map((p: any, i: number) => (
             <div 
               key={p.id}
               className="h-10 w-10 rounded-lg border-2 border-white bg-slate-100 bg-cover bg-center shadow-sm" 
@@ -36,22 +54,22 @@ const OrderRow: React.FC<OrderRowProps> = ({ order }) => {
               title={p.name}
             />
           ))}
-          {order.products.length > 2 && (
+          {products.length > 2 && (
             <div className="h-10 w-10 rounded-lg border-2 border-white bg-slate-50 flex items-center justify-center text-[10px] font-bold text-slate-400">
-              +{order.products.length - 2}
+              +{products.length - 2}
             </div>
           )}
         </div>
       </td>
-      <td className="px-4 py-4 sm:px-8 sm:py-6 text-sm text-slate-500 font-medium">{order.date}</td>
-      <td className="px-4 py-4 sm:px-8 sm:py-6 text-sm font-bold text-slate-900">${order.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+      <td className="px-4 py-4 sm:px-8 sm:py-6 text-sm text-slate-500 font-medium">{dateDisplay}</td>
+      <td className="px-4 py-4 sm:px-8 sm:py-6 text-sm font-bold text-slate-900">${amountNumber.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
       <td className="px-4 py-4 sm:px-8 sm:py-6 text-center">
         <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-bold border uppercase tracking-wide ${getStatusStyles(order.status)}`}>
           {order.status}
         </span>
       </td>
       <td className="px-4 py-4 sm:px-8 sm:py-6 rounded-r-2xl text-right">
-        <Link href={`/track/${order.id.replace('#', '')}`} className="text-slate-300 group-hover:text-primary transition-colors">
+        <Link href={`/track/${String(order.id).replace('#', '')}`} className="text-slate-300 group-hover:text-primary transition-colors">
           <span className="material-symbols-outlined font-bold">arrow_forward</span>
         </Link>
       </td>

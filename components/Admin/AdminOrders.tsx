@@ -1,19 +1,57 @@
 'use client';
 
-import React, { useState } from 'react';
-import { MOCK_ORDERS } from '@/constants';
+import React, { useEffect, useState } from 'react';
+
+interface Order {
+  id: number;
+  customerName: string;
+  email: string;
+  phone?: string | null;
+  status: string;
+  totalAmount: number;
+  items?: any;
+  createdAt: string;
+}
 
 export default function AdminOrders() {
-  const [orders, setOrders] = useState(MOCK_ORDERS);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [filter, setFilter] = useState<string>('All');
+  const [loading, setLoading] = useState(true);
 
-  const filteredOrders = filter === 'All' ? orders : orders.filter(o => o.status === filter);
-
-  const updateOrderStatus = (id: string, newStatus: string) => {
-    setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus as any } : o));
+  const loadOrders = async (status?: string) => {
+    setLoading(true);
+    try {
+      const url = status && status !== 'All' ? `/api/orders?status=${encodeURIComponent(status)}` : '/api/orders';
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        setOrders(data);
+      }
+    } catch {}
+    setLoading(false);
   };
 
-  const statusOptions = ['Processing', 'Shipped', 'In Transit', 'Delivered', 'Cancelled'];
+  useEffect(() => {
+    loadOrders(filter);
+  }, [filter]);
+
+  const filteredOrders = orders;
+
+  const updateOrderStatus = async (id: number, newStatus: string) => {
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: newStatus }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setOrders(orders.map(o => o.id === id ? updated : o));
+      }
+    } catch {}
+  };
+
+  const statusOptions = ['pending', 'Processing', 'Shipped', 'In Transit', 'Delivered', 'Cancelled'];
 
   return (
     <div className="p-8 space-y-8">
@@ -34,7 +72,7 @@ export default function AdminOrders() {
         >
           All Orders ({orders.length})
         </button>
-        {['Processing', 'Shipped', 'In Transit', 'Delivered', 'Cancelled'].map((status) => {
+        {['pending', 'Processing', 'Shipped', 'In Transit', 'Delivered', 'Cancelled'].map((status) => {
           const count = orders.filter(o => o.status === status).length;
           return (
             <button
@@ -61,7 +99,7 @@ export default function AdminOrders() {
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Order ID</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Date</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Amount</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Items</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Email</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Status</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Update Status</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Action</th>
@@ -70,16 +108,17 @@ export default function AdminOrders() {
             <tbody className="divide-y dark:divide-gray-700">
               {filteredOrders.map((order) => (
                 <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  <td className="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white">{order.id}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{order.date}</td>
-                  <td className="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white">${order.amount.toFixed(2)}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{order.products.length} items</td>
+                  <td className="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white">#{order.id}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{new Date(order.createdAt).toLocaleString()}</td>
+                  <td className="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white">${Number(order.totalAmount).toFixed(2)}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{order.email}</td>
                   <td className="px-6 py-4 text-sm">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                       order.status === 'Delivered' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
                       order.status === 'In Transit' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
                       order.status === 'Shipped' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
                       order.status === 'Processing' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                      order.status === 'pending' ? 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400' :
                       'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                     }`}>
                       {order.status}
@@ -109,29 +148,12 @@ export default function AdminOrders() {
         </div>
       </div>
 
-      {/* Order Details */}
-      {filteredOrders.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {filteredOrders.slice(0, 3).map((order) => (
-            <div key={order.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 space-y-4">
-              <h3 className="font-bold text-lg text-gray-900 dark:text-white">{order.id}</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{order.date}</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">${order.amount.toFixed(2)}</p>
-              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{order.summary}</p>
-              <div className="space-y-2">
-                {order.products.map((product) => (
-                  <div key={product.id} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                    <span className="material-icons text-sm">check_circle</span>
-                    {product.name}
-                  </div>
-                ))}
-              </div>
-              <button className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 rounded-lg transition-all mt-4">
-                View Full Details
-              </button>
-            </div>
-          ))}
-        </div>
+      {/* Empty/Loading States */}
+      {loading && (
+        <div className="p-6 text-gray-600 dark:text-gray-400">Loading orders...</div>
+      )}
+      {!loading && filteredOrders.length === 0 && (
+        <div className="p-6 text-gray-600 dark:text-gray-400">No orders found.</div>
       )}
     </div>
   );

@@ -1,44 +1,73 @@
 'use client';
 
-import React, { useState } from 'react';
-import { MOCK_USER, MOCK_ORDERS } from '@/constants';
+import React, { useEffect, useMemo, useState } from 'react';
 
 export default function AdminCustomers() {
-  const [customers] = useState([
-    {
-      id: '1',
-      name: MOCK_USER.name,
-      email: MOCK_USER.email,
-      joinDate: MOCK_USER.membershipDate,
-      membershipType: MOCK_USER.membershipType,
-      totalOrders: MOCK_ORDERS.length,
-      totalSpent: MOCK_ORDERS.reduce((s, o) => s + o.amount, 0),
-      status: 'Active',
-      avatar: MOCK_USER.avatar,
-    },
-    {
-      id: '2',
-      name: 'Marcus Johnson',
-      email: 'marcus.j@example.com',
-      joinDate: 'Aug 2023',
-      membershipType: 'Gold Member',
-      totalOrders: 8,
-      totalSpent: 6250.00,
-      status: 'Active',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200&h=200',
-    },
-    {
-      id: '3',
-      name: 'Emma Wilson',
-      email: 'emma.w@example.com',
-      joinDate: 'May 2023',
-      membershipType: 'Silver Member',
-      totalOrders: 5,
-      totalSpent: 3800.00,
-      status: 'Active',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200&h=200',
-    },
-  ]);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
+  const [customerOrders, setCustomerOrders] = useState<any[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/orders');
+        if (res.ok) {
+          const data = await res.json();
+          setOrders(data);
+        }
+      } catch {}
+      setLoading(false);
+    };
+    load();
+  }, []);
+
+  const customers = useMemo(() => {
+    const map = new Map<string, any>();
+    orders.forEach(o => {
+      const email = o.email;
+      if (!email) return;
+      const entry = map.get(email) || {
+        id: email,
+        name: o.customerName || email.split('@')[0],
+        email,
+        joinDate: new Date(o.createdAt).toLocaleDateString(),
+        membershipType: 'Member',
+        totalOrders: 0,
+        totalSpent: 0,
+        status: 'Active',
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(email)}`,
+      };
+      entry.totalOrders += 1;
+      entry.totalSpent += Number(o.totalAmount || 0);
+      if (!entry.firstOrderAt || new Date(o.createdAt) < new Date(entry.firstOrderAt)) {
+        entry.firstOrderAt = o.createdAt;
+        entry.joinDate = new Date(o.createdAt).toLocaleDateString();
+      }
+      map.set(email, entry);
+    });
+    return Array.from(map.values()).sort((a, b) => b.totalSpent - a.totalSpent);
+  }, [orders]);
+
+  const openCustomer = async (email: string) => {
+    setSelectedEmail(email);
+    try {
+      const res = await fetch(`/api/checkout?email=${encodeURIComponent(email)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setCustomerOrders(data);
+      } else {
+        setCustomerOrders([]);
+      }
+    } catch {
+      setCustomerOrders([]);
+    }
+  };
+  const closeCustomer = () => {
+    setSelectedEmail(null);
+    setCustomerOrders([]);
+  };
 
   return (
     <div className="p-8 space-y-8">
@@ -126,7 +155,7 @@ export default function AdminCustomers() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm flex gap-2">
-                    <button className="text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1">
+                    <button onClick={() => openCustomer(customer.email)} className="text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1">
                       <span className="material-icons text-sm">visibility</span>
                       View
                     </button>
@@ -159,7 +188,7 @@ export default function AdminCustomers() {
                   <p className="text-sm"><span className="text-gray-600 dark:text-gray-400">Orders:</span> <span className="font-semibold text-gray-900 dark:text-white">{customer.totalOrders}</span></p>
                   <p className="text-sm"><span className="text-gray-600 dark:text-gray-400">Total Spent:</span> <span className="font-semibold text-gray-900 dark:text-white">${customer.totalSpent.toFixed(2)}</span></p>
                 </div>
-                <button className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 rounded-lg transition-all">
+                <button onClick={() => openCustomer(customer.email)} className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 rounded-lg transition-all">
                   View Profile
                 </button>
               </div>
@@ -167,6 +196,56 @@ export default function AdminCustomers() {
           ))}
         </div>
       </div>
+
+      {/* Drawer: Customer Orders */}
+      {selectedEmail && (
+        <div className="fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/30" onClick={closeCustomer}></div>
+          <div className="absolute right-0 top-0 h-full w-full sm:w-[540px] bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 shadow-2xl p-6 overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Customer Orders</h3>
+              <button onClick={closeCustomer} className="text-gray-500 hover:text-gray-800 dark:hover:text-white">
+                <span className="material-icons">close</span>
+              </button>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">{selectedEmail}</p>
+            {loading ? (
+              <div className="py-10 text-center text-gray-500">Loading...</div>
+            ) : customerOrders.length === 0 ? (
+              <div className="py-10 text-center text-gray-500">No orders found for this customer.</div>
+            ) : (
+              <div className="space-y-4">
+                {customerOrders.map((order) => (
+                  <div key={order.id} className="border border-gray-200 dark:border-gray-800 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-bold text-gray-500">Order</span>
+                        <span className="text-sm font-bold text-gray-900 dark:text-white">#{order.id}</span>
+                      </div>
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                        order.status === 'Delivered' ? 'bg-green-100 text-green-700' :
+                        order.status === 'In Transit' ? 'bg-amber-100 text-amber-700' :
+                        order.status === 'Processing' ? 'bg-blue-100 text-blue-700' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>{order.status}</span>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-500">{new Date(order.createdAt).toLocaleString()}</div>
+                    <div className="mt-3 flex items-center justify-between">
+                      <div className="text-sm font-bold text-gray-900 dark:text-white">
+                        ${Number(order.totalAmount || 0).toLocaleString()}
+                      </div>
+                      <a href={`/track/${order.id}`} className="text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1">
+                        <span className="material-icons text-sm">visibility</span>
+                        Track
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

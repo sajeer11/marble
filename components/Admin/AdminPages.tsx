@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PRODUCTS } from '@/constants';
 
 interface SectionConfig {
@@ -33,11 +33,12 @@ export default function AdminPages() {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(true);
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [sections, setSections] = useState<Record<string, SectionConfig>>({
-    hero: { 
-      enabled: true, 
-      title: 'Premium Marble Selection', 
+    hero: {
+      enabled: true,
+      title: 'Premium Marble Selection',
       description: 'Transform your home with luxury finishes',
       coverImage: 'https://images.unsplash.com/photo-1578500494198-246f612d03b3?auto=format&fit=crop&w=1400&h=400&q=80'
     },
@@ -47,6 +48,37 @@ export default function AdminPages() {
     inspiration: { enabled: true, title: 'Room Inspiration', description: 'See how our products transform spaces' },
     design: { enabled: true, title: 'Design Gallery', description: 'Explore stunning marble designs' },
   });
+
+  useEffect(() => {
+    loadSections();
+  }, [currentPage]);
+
+  const loadSections = async () => {
+    try {
+      const response = await fetch(`/api/page-sections?page=${currentPage}`);
+      if (!response.ok) throw new Error('Failed to fetch sections');
+      const data = await response.json();
+
+      // If we got data from DB, use it; otherwise keep defaults
+      if (data && data.length > 0) {
+        const dbSections: Record<string, SectionConfig> = {};
+        data.forEach((sec: any) => {
+          dbSections[sec.sectionId] = {
+            enabled: sec.enabled,
+            title: sec.title || '',
+            description: sec.description || '',
+            coverImage: sec.coverImage || '',
+            ...sec.settings,
+          };
+        });
+        setSections(prev => ({ ...prev, ...dbSections }));
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error('Error loading sections:', error);
+      setLoading(false);
+    }
+  };
 
   const handleToggle = (sectionId: string) => {
     setSections(prev => ({
@@ -62,10 +94,30 @@ export default function AdminPages() {
     }));
   };
 
-  const handleSave = () => {
-    localStorage.setItem(`pages_sections_${currentPage}`, JSON.stringify(sections));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  const handleSave = async () => {
+    try {
+      // Save all sections to DB
+      const promises = Object.entries(sections).map(([sectionId, config]) => {
+        const { columns, itemsPerRow, ...basicFields } = config;
+        return fetch('/api/page-sections', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            page: currentPage,
+            sectionId,
+            ...basicFields,
+            settings: { columns, itemsPerRow },
+          }),
+        });
+      });
+
+      await Promise.all(promises);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (error) {
+      console.error('Error saving sections:', error);
+      alert('Failed to save sections');
+    }
   };
 
   // Preview Components
@@ -85,9 +137,9 @@ export default function AdminPages() {
       case 'hero':
         return (
           <div className="relative h-64 rounded-lg overflow-hidden">
-            <img 
-              src={config.coverImage} 
-              alt="Hero" 
+            <img
+              src={config.coverImage}
+              alt="Hero"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
@@ -106,7 +158,7 @@ export default function AdminPages() {
             <div className={`grid grid-cols-${config.columns || 4} gap-6`}>
               {['Marble', 'Tiles', 'Natural Stone', 'Slabs'].slice(0, config.columns).map((cat) => (
                 <div key={cat} className="bg-gradient-to-br from-yellow-50 to-gray-100 dark:from-yellow-900/20 dark:to-gray-800 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-                  <img 
+                  <img
                     src={`https://images.unsplash.com/photo-1578500494198-246f612d03b3?auto=format&fit=crop&w=300&q=80`}
                     alt={cat}
                     className="w-full h-40 object-cover"
@@ -167,7 +219,7 @@ export default function AdminPages() {
             <div className="grid grid-cols-2 gap-6">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="bg-gray-200 dark:bg-gray-700 rounded-lg h-48 overflow-hidden">
-                  <img 
+                  <img
                     src={`https://images.unsplash.com/photo-157850049419-8${i}246f612d03b3?auto=format&fit=crop&w=400&q=80`}
                     alt={`Inspiration ${i}`}
                     className="w-full h-full object-cover hover:scale-105 transition-transform"
@@ -186,7 +238,7 @@ export default function AdminPages() {
             <div className="grid grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="bg-gray-200 dark:bg-gray-700 rounded-lg h-40 overflow-hidden">
-                  <img 
+                  <img
                     src={`https://images.unsplash.com/photo-157850049419-846f612d03b3?auto=format&fit=crop&w=300&q=80`}
                     alt={`Design ${i}`}
                     className="w-full h-full object-cover hover:scale-105 transition-transform"
@@ -233,11 +285,10 @@ export default function AdminPages() {
               setCurrentPage(page);
               setExpandedSection(null);
             }}
-            className={`px-6 py-2 rounded-lg font-semibold transition-all capitalize ${
-              currentPage === page
+            className={`px-6 py-2 rounded-lg font-semibold transition-all capitalize ${currentPage === page
                 ? 'bg-yellow-600 text-white'
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300'
-            }`}
+              }`}
           >
             {page} Page
           </button>
@@ -263,17 +314,16 @@ export default function AdminPages() {
           <div className="flex-1 overflow-y-auto">
             <div className="p-6 space-y-3">
               {PAGE_SECTIONS.map((section) => {
-                const config = sections[section.id];
+                const config = sections[section.id] || { enabled: false, title: '', description: '' };
                 const isExpanded = expandedSection === section.id;
 
                 return (
                   <div
                     key={section.id}
-                    className={`border-2 rounded-lg transition-all cursor-pointer ${
-                      isExpanded
+                    className={`border-2 rounded-lg transition-all cursor-pointer ${isExpanded
                         ? 'border-yellow-600 bg-yellow-50 dark:bg-yellow-900/20'
                         : `border-gray-300 dark:border-gray-600 ${config.enabled ? 'hover:border-yellow-600' : 'opacity-50'}`
-                    }`}
+                      }`}
                   >
                     {/* Section Header */}
                     <div
@@ -363,11 +413,10 @@ export default function AdminPages() {
                                   <button
                                     key={col}
                                     onClick={() => handleUpdate(section.id, section.id === 'featured' ? 'itemsPerRow' : 'columns', col)}
-                                    className={`flex-1 py-2 rounded-lg font-semibold transition-all ${
-                                      (section.id === 'featured' ? config.itemsPerRow : config.columns) === col
+                                    className={`flex-1 py-2 rounded-lg font-semibold transition-all ${(section.id === 'featured' ? config.itemsPerRow : config.columns) === col
                                         ? 'bg-yellow-600 text-white'
                                         : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
-                                    }`}
+                                      }`}
                                   >
                                     {col} Cols
                                   </button>

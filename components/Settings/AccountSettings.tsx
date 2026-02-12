@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useUserAuth } from '@/contexts/UserAuthContext';
 
 interface AccountData {
   firstName: string;
@@ -11,12 +12,13 @@ interface AccountData {
 }
 
 export default function AccountSettings() {
+  const { user, isLoggedIn } = useUserAuth();
   const [formData, setFormData] = useState<AccountData>({
-    firstName: 'Sajeer',
-    lastName: 'Dev',
-    email: 'sajeer@example.com',
-    phone: '+62 812 345 6789',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sajeer',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=MarbleLux',
   });
 
   const [isEditing, setIsEditing] = useState(false);
@@ -28,10 +30,76 @@ export default function AccountSettings() {
   };
 
   const handleSave = () => {
-    setSaved(true);
-    setIsEditing(false);
-    setTimeout(() => setSaved(false), 3000);
+    const pid = typeof user?.id === 'number' ? user?.id : parseInt(String(user?.id || 0));
+    if (!pid) return;
+    fetch('/api/user/profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: pid, profile: formData }),
+    }).then(() => {
+      setSaved(true);
+      setIsEditing(false);
+      setTimeout(() => setSaved(false), 3000);
+    });
   };
+
+  useEffect(() => {
+    const init = async () => {
+      if (!isLoggedIn || !user?.id) return;
+      const pid = typeof user.id === 'number' ? user.id : parseInt(String(user.id));
+      try {
+        const res = await fetch(`/api/user/profile?userId=${pid}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data) {
+            setFormData({
+              firstName: data.firstName || '',
+              lastName: data.lastName || '',
+              email: data.email || user.email,
+              phone: data.phone || '',
+              avatar: data.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=MarbleLux',
+            });
+          } else {
+            setFormData(prev => ({
+              ...prev,
+              email: user.email,
+            }));
+          }
+        }
+      } catch {}
+      // Fill from user.name if missing
+      const uname = user?.name || '';
+      if (uname && (!formData.firstName || !formData.lastName)) {
+        const parts = uname.split(' ');
+        setFormData(prev => ({
+          ...prev,
+          firstName: prev.firstName || parts[0] || '',
+          lastName: prev.lastName || parts.slice(1).join(' ') || '',
+        }));
+      }
+      // Fetch latest checkout info to auto-populate phone
+      try {
+        if (user?.email) {
+          const oRes = await fetch(`/api/checkout?email=${encodeURIComponent(user.email)}`);
+          if (oRes.ok) {
+            const orders = await oRes.json();
+            if (Array.isArray(orders) && orders.length > 0) {
+              const latest = orders[0];
+              const phone = latest?.phone || '';
+              const cname = latest?.customerName || '';
+              setFormData(prev => ({
+                ...prev,
+                phone: prev.phone || phone,
+                firstName: prev.firstName || (cname ? String(cname).split(' ')[0] : prev.firstName),
+                lastName: prev.lastName || (cname ? String(cname).split(' ').slice(1).join(' ') : prev.lastName),
+              }));
+            }
+          }
+        }
+      } catch {}
+    };
+    init();
+  }, [isLoggedIn, user?.id, user?.email]);
 
   return (
     <div className="space-y-6">

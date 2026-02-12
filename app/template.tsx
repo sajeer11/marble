@@ -29,7 +29,7 @@ const MarbleAssistant = () => {
   return (
     <div className="fixed bottom-10 right-10 z-[100]">
       {!isOpen ? (
-        <button 
+        <button
           onClick={() => setIsOpen(true)}
           className="bg-primary hover:bg-primary-dark text-white p-4 rounded-full shadow-2xl transition-all transform hover:scale-110 flex items-center justify-center"
         >
@@ -50,9 +50,8 @@ const MarbleAssistant = () => {
             )}
             {messages.map((m, idx) => (
               <div key={idx} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${
-                  m.role === 'user' ? 'bg-primary text-white rounded-tr-none' : 'bg-gray-100 dark:bg-gray-800 dark:text-white rounded-tl-none'
-                }`}>
+                <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${m.role === 'user' ? 'bg-primary text-white rounded-tr-none' : 'bg-gray-100 dark:bg-gray-800 dark:text-white rounded-tl-none'
+                  }`}>
                   {m.text}
                 </div>
               </div>
@@ -60,12 +59,12 @@ const MarbleAssistant = () => {
             {loading && <div className="text-xs text-primary animate-pulse">Consultant is thinking...</div>}
           </div>
           <div className="p-4 border-t dark:border-gray-800 flex gap-2">
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Type your question..." 
+              placeholder="Type your question..."
               className="flex-1 h-10 px-4 rounded-lg bg-gray-50 dark:bg-background-dark border-none focus:ring-1 focus:ring-primary text-sm"
             />
             <button onClick={handleSend} className="bg-primary text-white px-3 rounded-lg flex items-center justify-center">
@@ -81,11 +80,11 @@ const MarbleAssistant = () => {
 // ---- Scroll to Top on Route Change ----
 const ScrollToTop = () => {
   const pathname = usePathname();
-  
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
-  
+
   return null;
 };
 
@@ -100,11 +99,11 @@ export default function RootTemplate({
       <ScrollToTop />
       <div className="min-h-screen flex font-sans overflow-x-hidden">
         <div className="flex-1 flex flex-col">
-          <Navbar />
+          {!usePathname().startsWith('/dashboard') && !usePathname().startsWith('/admin') && <Navbar />}
           <main className="flex-1 w-full flex flex-col">
             {children}
           </main>
-          <Footer />
+          {!usePathname().startsWith('/dashboard') && !usePathname().startsWith('/admin') && <Footer />}
         </div>
         <MarbleAssistant />
         <GeminiConcierge />

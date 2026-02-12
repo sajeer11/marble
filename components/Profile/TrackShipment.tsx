@@ -1,18 +1,51 @@
 
 'use client';
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
+const statusToIndex: Record<string, number> = {
+  'pending': 0,
+  'Processing': 1,
+  'Shipped': 2,
+  'In Transit': 2,
+  'Delivered': 3,
+};
+
 const TrackShipment: React.FC = () => {
   const { id } = useParams();
+  const [order, setOrder] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(`/api/orders/${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setOrder(data);
+        } else {
+          setOrder(null);
+          setError('Order not found');
+        }
+      } catch {
+        setOrder(null);
+        setError('Failed to load order');
+      }
+      setLoading(false);
+    };
+    load();
+  }, [id]);
+
+  const currentIndex = statusToIndex[order?.status || 'pending'] ?? 0;
   const steps = [
-    { title: 'Order Placed', desc: 'We have received your order and payment.', date: 'Oct 18, 10:30 AM', icon: 'check', status: 'completed' },
-    { title: 'Quality Inspection', desc: 'Marble slab verified for grain perfection and hand-polished finish.', date: 'Oct 19, 2:15 PM', icon: 'verified', status: 'completed' },
-    { title: 'In Transit', desc: 'Departed from Milan Distribution Center.', date: 'Oct 20, 09:00 AM', icon: 'local_shipping', status: 'current' },
-    { title: 'Delivered', desc: 'Expected by Oct 24 • White-glove delivery to your designated room.', date: 'Expected Oct 24', icon: 'home', status: 'upcoming' },
+    { title: 'Order Placed', desc: 'We have received your order.', icon: 'check', status: currentIndex >= 0 ? 'completed' : 'upcoming', date: order ? new Date(order.createdAt).toLocaleString() : '' },
+    { title: 'Processing', desc: 'Preparing your marble for shipment.', icon: 'pending_actions', status: currentIndex >= 1 ? 'completed' : 'upcoming', date: '' },
+    { title: order?.status === 'In Transit' ? 'In Transit' : 'Shipped', desc: 'On the way to your destination.', icon: 'local_shipping', status: currentIndex >= 2 ? (order?.status === 'In Transit' ? 'current' : 'completed') : 'upcoming', date: '' },
+    { title: 'Delivered', desc: 'Order delivered to your address.', icon: 'home', status: currentIndex >= 3 ? 'completed' : 'upcoming', date: '' },
   ];
 
   return (
@@ -29,12 +62,12 @@ const TrackShipment: React.FC = () => {
         <div className="flex flex-col gap-3">
           <h1 className="text-slate-900 text-4xl font-light leading-tight tracking-tight">Track Your Shipment</h1>
           <p className="text-slate-400 text-sm font-medium tracking-wide">
-            Order #{id || 'LX-99283-MB'} • <span className="text-slate-600 italic">Carrara Marble Coffee Table</span>
+            Order #{id || 'LX-99283-MB'} • <span className="text-slate-600 italic">{order?.summary || 'Order details'}</span>
           </p>
         </div>
         <div className="bg-slate-50 border border-slate-100 px-8 py-5 rounded-2xl flex flex-col items-end shadow-sm">
           <p className="text-accent-gold text-[10px] font-extrabold uppercase tracking-[0.2em] mb-1">Estimated Delivery</p>
-          <p className="text-slate-900 text-3xl font-light">October 24, 2023</p>
+          <p className="text-slate-900 text-3xl font-light">{order?.estimatedDelivery || '—'}</p>
         </div>
       </div>
 
@@ -97,7 +130,7 @@ const TrackShipment: React.FC = () => {
               <div>
                 <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest mb-2">Tracking Number</p>
                 <div className="flex items-center justify-between bg-white px-4 py-3 rounded-xl border border-slate-100">
-                  <code className="text-slate-800 text-xs font-bold">LX-7788-2991-MB</code>
+                  <code className="text-slate-800 text-xs font-bold">ML-{String(id).padStart(6, '0')}</code>
                   <button className="text-slate-300 hover:text-accent-gold transition-colors">
                     <span className="material-symbols-outlined text-sm">content_copy</span>
                   </button>

@@ -13,21 +13,20 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    // Simulate auth delay
-    setTimeout(() => {
-      if (login(username, password)) {
-        router.push('/admin');
-      } else {
-        setError('Invalid username or password');
-        setPassword('');
-      }
-      setIsLoading(false);
-    }, 500);
+    // Call async login
+    const success = await login(username, password);
+    if (success) {
+      router.push('/admin');
+    } else {
+      setError('Invalid username or password');
+      setPassword('');
+    }
+    setIsLoading(false);
   };
 
   return (

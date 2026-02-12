@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useUserAuth } from '@/contexts/UserAuthContext';
 
 interface Preferences {
   theme: 'light' | 'dark' | 'auto';
@@ -10,6 +11,7 @@ interface Preferences {
 }
 
 export default function PreferencesSettings() {
+  const { user, isLoggedIn } = useUserAuth();
   const [preferences, setPreferences] = useState<Preferences>({
     theme: 'auto',
     language: 'English',
@@ -39,21 +41,52 @@ export default function PreferencesSettings() {
     localStorage.setItem('theme', preferences.theme);
   }, [preferences.theme]);
 
-  // Load theme from localStorage on mount
+  // Load saved preferences on mount
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'auto' | null;
-    if (savedTheme) {
-      setPreferences(prev => ({ ...prev, theme: savedTheme }));
-    }
-  }, []);
+    const init = async () => {
+      if (!isLoggedIn || !user?.id) return;
+      const uid = encodeURIComponent(String(user.id));
+      try {
+        const res = await fetch(`/api/user/preferences?userId=${uid}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data) {
+            setPreferences(prev => ({
+              ...prev,
+              theme: (data.theme as 'light' | 'dark' | 'auto') || prev.theme,
+              language: data.language || prev.language,
+              currency: data.currency || prev.currency,
+              twoFactor: !!data.twoFactor,
+            }));
+          }
+        }
+      } catch {}
+      const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'auto' | null;
+      if (savedTheme) {
+        setPreferences(prev => ({ ...prev, theme: savedTheme }));
+      }
+    };
+    init();
+  }, [isLoggedIn, user?.id]);
 
   const handleChange = (key: keyof Preferences, value: any) => {
     setPreferences(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  const handleSave = async () => {
+    if (!isLoggedIn || !user?.id) return;
+    const uid = String(user.id);
+    try {
+      const res = await fetch('/api/user/preferences', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: uid, preferences }),
+      });
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+      }
+    } catch {}
   };
 
   return (

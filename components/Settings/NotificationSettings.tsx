@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useUserAuth } from '@/contexts/UserAuthContext';
 
 interface NotificationPrefs {
   orderUpdates: boolean;
@@ -10,9 +11,11 @@ interface NotificationPrefs {
   priceDrops: boolean;
   weeklyNewsletter: boolean;
   emailDigest: 'daily' | 'weekly' | 'never';
+  smsShipment: boolean;
 }
 
 export default function NotificationSettings() {
+  const { user, isLoggedIn } = useUserAuth();
   const [notifications, setNotifications] = useState<NotificationPrefs>({
     orderUpdates: true,
     marketing: true,
@@ -21,9 +24,37 @@ export default function NotificationSettings() {
     priceDrops: false,
     weeklyNewsletter: true,
     emailDigest: 'weekly',
+    smsShipment: false,
   });
 
   const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    const init = async () => {
+      if (!isLoggedIn || !user?.id) return;
+      const uid = encodeURIComponent(String(user.id));
+      try {
+        const res = await fetch(`/api/user/notifications?userId=${uid}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data) {
+            setNotifications(prev => ({
+              ...prev,
+              orderUpdates: data.orderUpdates ?? prev.orderUpdates,
+              marketing: data.marketing ?? prev.marketing,
+              productReviews: data.productReviews ?? prev.productReviews,
+              newArrivals: data.newArrivals ?? prev.newArrivals,
+              priceDrops: data.priceDrops ?? prev.priceDrops,
+              weeklyNewsletter: data.weeklyNewsletter ?? prev.weeklyNewsletter,
+              emailDigest: (data.emailDigest as 'daily' | 'weekly' | 'never') ?? prev.emailDigest,
+              smsShipment: data.smsShipment ?? prev.smsShipment,
+            }));
+          }
+        }
+      } catch {}
+    };
+    init();
+  }, [isLoggedIn, user?.id]);
 
   const handleToggle = (key: keyof NotificationPrefs & (string | boolean)) => {
     if (typeof notifications[key] === 'boolean') {
@@ -35,9 +66,20 @@ export default function NotificationSettings() {
     setNotifications(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  const handleSave = async () => {
+    if (!isLoggedIn || !user?.id) return;
+    const uid = String(user.id);
+    try {
+      const res = await fetch('/api/user/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: uid, notifications }),
+      });
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+      }
+    } catch {}
   };
 
   const NotificationToggle = ({ label, value, onChange, description }: any) => (
@@ -162,8 +204,8 @@ export default function NotificationSettings() {
         </p>
         <NotificationToggle
           label="Order Shipment Tracking"
-          value={true}
-          onChange={() => {}}
+          value={notifications.smsShipment}
+          onChange={() => handleToggle('smsShipment')}
           description="SMS alerts when your order ships and is out for delivery"
         />
       </div>

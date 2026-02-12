@@ -7,7 +7,6 @@ import PreferencesSettings from './PreferencesSettings';
 import AddressSettings from './AddressSettings';
 import NotificationSettings from './NotificationSettings';
 import SecuritySettings from './SecuritySettings';
-
 type SettingsTab = 'account' | 'preferences' | 'address' | 'notifications' | 'security';
 
 export default function SettingsMain() {

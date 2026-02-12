@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useUserAuth } from '@/contexts/UserAuthContext';
 
 interface Address {
   id: string;
@@ -14,28 +15,8 @@ interface Address {
 }
 
 export default function AddressSettings() {
-  const [addresses, setAddresses] = useState<Address[]>([
-    {
-      id: '1',
-      label: 'Home',
-      firstName: 'Sajeer',
-      lastName: 'Dev',
-      fullAddress: '123 Rock Street, Marble District',
-      city: 'Jakarta, 12345',
-      phone: '+62 812 345 6789',
-      isDefault: true,
-    },
-    {
-      id: '2',
-      label: 'Office',
-      firstName: 'Sajeer',
-      lastName: 'Dev',
-      fullAddress: '456 Stone Avenue, Business Complex',
-      city: 'Jakarta, 12346',
-      phone: '+62 812 345 6789',
-      isDefault: false,
-    },
-  ]);
+  const { user, isLoggedIn } = useUserAuth();
+  const [addresses, setAddresses] = useState<Address[]>([]);
 
   const [showForm, setShowForm] = useState(false);
   const [newAddress, setNewAddress] = useState<Omit<Address, 'id'>>({
@@ -48,12 +29,42 @@ export default function AddressSettings() {
     isDefault: false,
   });
 
+  useEffect(() => {
+    const init = async () => {
+      if (!isLoggedIn || !user?.id) return;
+      const uid = encodeURIComponent(String(user.id));
+      try {
+        const res = await fetch(`/api/user/addresses?userId=${uid}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setAddresses(data);
+          }
+        }
+      } catch {}
+    };
+    init();
+  }, [isLoggedIn, user?.id]);
+
+  const persistAddresses = async (updated: Address[]) => {
+    if (!isLoggedIn || !user?.id) return;
+    const uid = String(user.id);
+    setAddresses(updated);
+    try {
+      await fetch('/api/user/addresses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: uid, addresses: updated }),
+      });
+    } catch {}
+  };
+
   const handleAddAddress = () => {
     const address: Address = {
       id: Date.now().toString(),
       ...newAddress,
     };
-    setAddresses([...addresses, address]);
+    persistAddresses([...addresses, address]);
     setNewAddress({
       label: '',
       firstName: '',
@@ -67,11 +78,11 @@ export default function AddressSettings() {
   };
 
   const handleDeleteAddress = (id: string) => {
-    setAddresses(addresses.filter(addr => addr.id !== id));
+    persistAddresses(addresses.filter(addr => addr.id !== id));
   };
 
   const handleSetDefault = (id: string) => {
-    setAddresses(addresses.map(addr => ({
+    persistAddresses(addresses.map(addr => ({
       ...addr,
       isDefault: addr.id === id,
     })));

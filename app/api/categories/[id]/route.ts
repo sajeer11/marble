@@ -1,9 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 
+const prisma = new PrismaClient();
+
+// GET - Get single category
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: any
 ) {
   try {
     const category = await prisma.category.findUnique({
@@ -11,7 +14,10 @@ export async function GET(
     });
 
     if (!category) {
-      return NextResponse.json({ error: 'Category not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Category not found' },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(category);
@@ -24,22 +30,23 @@ export async function GET(
   }
 }
 
+// PUT - Update category
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: any
 ) {
   try {
     const body = await request.json();
-    const { name, slug, image, description, enabled } = body;
+    const { name, slug, description, image, enabled } = body;
 
     const category = await prisma.category.update({
       where: { id: parseInt(params.id) },
       data: {
         name,
-        slug: slug || name.toLowerCase().replace(/\s+/g, '-'),
-        image: image || null,
-        description: description || null,
-        enabled: enabled !== false,
+        slug,
+        description,
+        image,
+        enabled,
       },
     });
 
@@ -53,16 +60,17 @@ export async function PUT(
   }
 }
 
+// DELETE - Delete category
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: any
 ) {
   try {
     await prisma.category.delete({
       where: { id: parseInt(params.id) },
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ message: 'Category deleted successfully' });
   } catch (error) {
     console.error('Error deleting category:', error);
     return NextResponse.json(

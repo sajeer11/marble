@@ -22,8 +22,6 @@ const CategoriesGrid: React.FC = () => {
     };
 
     loadCategories();
-    const interval = setInterval(loadCategories, 3000); // Refresh every 3 seconds
-    return () => clearInterval(interval);
   }, []);
 
   if (loading) {

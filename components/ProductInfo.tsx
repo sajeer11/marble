@@ -94,7 +94,7 @@ const ProductInfo: React.FC<Props> = ({ product, quantity, setQuantity, addToCar
       <div className="space-y-3 text-sm text-gray-500 dark:text-gray-400">
         <div className="flex">
           <span className="w-24">SKU</span>
-          <span>: ML-{product.id.padStart(3, '0')}</span>
+          <span>: ML-{String(product.id).padStart(3, '0')}</span>
         </div>
         <div className="flex">
           <span className="w-24">Category</span>

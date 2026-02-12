@@ -1,14 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 
+const prisma = new PrismaClient();
+
+// GET - Get single product
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: any
 ) {
   try {
-    const id = parseInt(params.id);
     const product = await prisma.product.findUnique({
-      where: { id },
+      where: { id: parseInt(params.id) },
     });
 
     if (!product) {
@@ -28,25 +30,25 @@ export async function GET(
   }
 }
 
+// PUT - Update product
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: any
 ) {
   try {
-    const id = parseInt(params.id);
     const body = await request.json();
     const { name, category, price, originalPrice, description, image, tag } = body;
 
     const product = await prisma.product.update({
-      where: { id },
+      where: { id: parseInt(params.id) },
       data: {
         name,
         category,
-        price: parseFloat(price),
+        price: price ? parseFloat(price) : undefined,
         originalPrice: originalPrice ? parseFloat(originalPrice) : null,
         description,
-        image: image || null,
-        tag: tag || null,
+        image,
+        tag,
       },
     });
 
@@ -60,18 +62,17 @@ export async function PUT(
   }
 }
 
+// DELETE - Delete product
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: any
 ) {
   try {
-    const id = parseInt(params.id);
-
     await prisma.product.delete({
-      where: { id },
+      where: { id: parseInt(params.id) },
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ message: 'Product deleted successfully' });
   } catch (error) {
     console.error('Error deleting product:', error);
     return NextResponse.json(
