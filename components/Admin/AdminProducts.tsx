@@ -1,7 +1,6 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import type { Product } from '@/types';
+import ImageUpload from './ImageUpload';
 
 type ProductForm = Omit<Product, 'id'> & { id?: string };
 
@@ -216,13 +215,11 @@ export default function AdminProducts() {
               onChange={handleInputChange}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
-            <input
-              type="text"
-              name="image"
-              placeholder="Image URL"
-              value={formData.image}
-              onChange={handleInputChange}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white col-span-2"
+            <ImageUpload
+              label="Product Image"
+              value={formData.image || ''}
+              onChange={(url) => setFormData(prev => ({ ...prev, image: url }))}
+              className="col-span-2"
             />
             <select
               name="tag"

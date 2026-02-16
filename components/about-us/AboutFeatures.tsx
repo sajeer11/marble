@@ -1,6 +1,14 @@
 import React from 'react';
 
-const AboutFeatures: React.FC = () => {
+interface AboutFeaturesProps {
+  title?: string;
+  description?: string;
+}
+
+const AboutFeatures: React.FC<AboutFeaturesProps> = ({
+  title = 'Why Choose MarbleLux?',
+  description = 'We provide heirlooms that last generations. Here is what sets our craftsmanship apart.'
+}) => {
   const features = [
     { icon: 'diamond', title: 'Premium Quality', desc: 'Sourced directly from renowned quarries.' },
     { icon: 'handyman', title: 'Handcrafted', desc: 'Finished by master stone artisans.' },
@@ -13,10 +21,10 @@ const AboutFeatures: React.FC = () => {
       <div className="container mx-auto px-6">
         <div className="text-center mb-20">
           <h2 className="text-4xl font-display font-bold mb-4 dark:text-white">
-            Why Choose MarbleLux?
+            {title}
           </h2>
           <p className="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
-            We provide heirlooms that last generations. Here is what sets our craftsmanship apart.
+            {description}
           </p>
         </div>
 

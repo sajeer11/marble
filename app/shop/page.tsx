@@ -1,10 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
 import Pagination from '@/components/Pagination';
 
-export default function Shop() {
+function ShopContent() {
+  const searchParams = useSearchParams();
+  const search = searchParams.get('search') || '';
+
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -21,7 +25,7 @@ export default function Shop() {
 
   useEffect(() => {
     loadProducts();
-  }, [currentPage, selectedCategory]);
+  }, [currentPage, selectedCategory, search]);
 
   const loadCategories = async () => {
     try {
@@ -42,6 +46,7 @@ export default function Shop() {
         page: currentPage.toString(),
         limit: perPage.toString(),
         ...(selectedCategory !== 'all' && { category: selectedCategory }),
+        ...(search && { search }),
       });
 
       const res = await fetch(`/api/products?${params}`);
@@ -144,5 +149,17 @@ export default function Shop() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function Shop() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <ShopContent />
+    </Suspense>
   );
 }

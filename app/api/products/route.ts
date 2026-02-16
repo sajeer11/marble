@@ -19,6 +19,7 @@ export async function GET(request: Request) {
       where.category = category;
     }
     if (search) {
+      console.log('Searching for:', search);
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
@@ -27,6 +28,7 @@ export async function GET(request: Request) {
 
     // Get total count for pagination
     const total = await prisma.product.count({ where });
+    console.log('Total products found:', total);
 
     // Get products
     const products = await prisma.product.findMany({

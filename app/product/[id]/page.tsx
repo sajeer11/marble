@@ -8,6 +8,8 @@ import ProductGallery from '@/components/ProductGallery';
 import ProductInfo from '@/components/ProductInfo';
 import ProductTabs from '@/components/ProductTabs';
 import RelatedProducts from '@/components/RelatedProducts';
+import ReviewsSection from '@/components/ReviewsSection';
+import { useUserAuth } from '@/contexts/UserAuthContext';
 
 export default function ProductDetail() {
   const params = useParams();
@@ -17,6 +19,7 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
   const { addToCart } = useCart();
+  const { user } = useUserAuth();
 
   useEffect(() => {
     const load = async () => {
@@ -70,6 +73,7 @@ export default function ProductDetail() {
         </div>
         <ProductTabs activeTab={activeTab} setActiveTab={setActiveTab} />
         <RelatedProducts relatedProducts={related} />
+        <ReviewsSection productId={parseInt(id)} userId={typeof user?.id === 'string' ? parseInt(user.id) : user?.id} />
       </main>
     </div>
   );

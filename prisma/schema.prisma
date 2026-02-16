@@ -21,6 +21,7 @@ model Product {
   tag           String? @db.VarChar(50)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  reviews       Review[]
 
   @@index([category])
   @@index([createdAt])
@@ -43,6 +44,7 @@ model Category {
 // Customer orders
 model Order {
   id            Int      @id @default(autoincrement())
+  customId      String?  @unique
   customerName  String   @db.VarChar(255)
   email         String   @db.VarChar(255)
   phone         String?  @db.VarChar(20)
@@ -50,6 +52,9 @@ model Order {
   totalAmount   Decimal  @db.Decimal(10, 2)
   shippingAddress String? @db.Text
   items         Json?    // Store order items as JSON
+  userId        Int?     // Link to user if logged in
+  user          User?    @relation(fields: [userId], references: [id])
+  reviews       Review[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -101,6 +106,9 @@ model User {
   name      String?  @db.VarChar(255)
   role      Role     @default(USER)
   cart      Cart?
+  orders    Order[]
+  reviews   Review[]
+  notifications Notification[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -139,3 +147,36 @@ model CartItem {
   @@unique([cartId, productId])
 }
 
+model Review {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderId   Int
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  rating    Int      @default(5)
+  comment   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId])
+  @@index([productId])
+  @@index([orderId])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String   @db.VarChar(255)
+  message   String   @db.Text
+  type      String   @db.VarChar(50) // "order_status", "system", etc.
+  read      Boolean  @default(false)
+  link      String?  @db.VarChar(255) // Optional link to redirect user
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([read])
+}

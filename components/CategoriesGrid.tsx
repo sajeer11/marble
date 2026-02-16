@@ -2,7 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 
-const CategoriesGrid: React.FC = () => {
+interface CategoriesGridProps {
+  title?: string;
+  description?: string;
+}
+
+const CategoriesGrid: React.FC<CategoriesGridProps> = ({
+  title = 'Browse The Range',
+  description = 'Exquisite stone surfaces tailored for every need.'
+}) => {
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,10 +45,10 @@ const CategoriesGrid: React.FC = () => {
       {/* Section Header */}
       <div className="text-center mb-12 md:mb-16">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-900 dark:text-white mb-2">
-          Browse The Range
+          {title}
         </h2>
         <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base md:text-lg">
-          Exquisite stone surfaces tailored for every need.
+          {description}
         </p>
       </div>
 

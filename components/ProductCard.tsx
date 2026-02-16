@@ -13,19 +13,26 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCart();
 
+  const [added, setAdded] = React.useState(false);
+
+  const handleAddToCart = () => {
+    addToCart(product);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  };
+
   return (
     <div className="group bg-[#F4F5F7] dark:bg-surface-dark relative overflow-hidden flex flex-col h-full rounded-md shadow-sm">
       <div className="relative overflow-hidden aspect-[4/5]">
-        <img 
-          alt={product.name} 
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-          src={product.image} 
+        <img
+          alt={product.name}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          src={product.image}
         />
         {product.tag && (
-          <div className={`absolute top-4 right-4 text-white text-xs font-bold px-2 py-2 rounded-full h-10 w-10 flex items-center justify-center ${
-            product.tag.includes('-') ? 'bg-red-400' : 
-            product.tag === 'New' ? 'bg-teal-400' : 'bg-primary'
-          }`}>
+          <div className={`absolute top-4 right-4 text-white text-xs font-bold px-2 py-2 rounded-full h-10 w-10 flex items-center justify-center ${product.tag.includes('-') ? 'bg-red-400' :
+              product.tag === 'New' ? 'bg-teal-400' : 'bg-primary'
+            }`}>
             {product.tag}
           </div>
         )}
@@ -33,11 +40,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <Link href={`/product/${product.id}`} className="bg-white text-primary font-bold py-2 px-6 sm:py-3 sm:px-10 hover:bg-primary hover:text-white transition-all w-full sm:w-3/4 text-center">
             View Details
           </Link>
-          <button 
-            onClick={() => addToCart(product)}
-            className="bg-primary text-white font-bold py-2 px-6 sm:py-3 sm:px-10 hover:bg-primary-dark transition-all w-full sm:w-3/4 text-center"
+          <button
+            onClick={handleAddToCart}
+            className={`${added ? 'bg-green-600' : 'bg-primary'} text-white font-bold py-2 px-6 sm:py-3 sm:px-10 hover:opacity-90 transition-all w-full sm:w-3/4 text-center flex items-center justify-center gap-2`}
           >
-            Add to Cart
+            {added ? (
+              <>
+                <span className="material-icons text-sm">check</span>
+                Added!
+              </>
+            ) : 'Add to Cart'}
           </button>
           <div className="flex gap-4 text-white">
             <button className="flex items-center gap-1 hover:text-primary text-sm">

@@ -14,8 +14,9 @@ import AdminCategories from '@/components/Admin/AdminCategories';
 import AdminNavigation from '@/components/Admin/AdminNavigation';
 import AdminAnalytics from '@/components/Admin/AdminAnalytics';
 import AdminSettings from '@/components/Admin/AdminSettings';
+import AdminReviews from '@/components/Admin/AdminReviews';
 
-type AdminTab = 'dashboard' | 'products' | 'orders' | 'customers' | 'pages' | 'categories' | 'navigation' | 'analytics' | 'settings';
+type AdminTab = 'dashboard' | 'products' | 'orders' | 'customers' | 'pages' | 'categories' | 'navigation' | 'analytics' | 'reviews' | 'settings';
 
 function AdminContent() {
   const router = useRouter();
@@ -40,6 +41,8 @@ function AdminContent() {
         return <AdminNavigation />;
       case 'analytics':
         return <AdminAnalytics />;
+      case 'reviews':
+        return <AdminReviews />;
       case 'settings':
         return <AdminSettings />;
       default:

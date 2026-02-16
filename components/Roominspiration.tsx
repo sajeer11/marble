@@ -1,29 +1,37 @@
 
 import React from 'react';
 
-const RoomInspiration: React.FC = () => {
+interface RoomInspirationProps {
+    title?: string;
+    description?: string;
+}
+
+const RoomInspiration: React.FC<RoomInspirationProps> = ({
+    title = '50+ Beautiful rooms inspiration',
+    description = 'Our designer already made a lot of beautiful prototypes of rooms that inspire you.'
+}) => {
     return (
         <section className="bg-beige py-12 md:py-20 overflow-hidden">
             <div className="container mx-auto px-4 sm:px-6 flex flex-col lg:flex-row items-center">
-                    {/* Left Content */}
-                    <div className="w-full lg:w-1/3 px-4 sm:px-6 md:pl-8 md:pr-10 mb-8 lg:mb-0 text-center lg:text-left">
+                {/* Left Content */}
+                <div className="w-full lg:w-1/3 px-4 sm:px-6 md:pl-8 md:pr-10 mb-8 lg:mb-0 text-center lg:text-left">
                     <h2 className="text-4xl md:text-5xl font-bold font-display leading-tight text-secondary mb-4">
-                        50+ Beautiful rooms inspiration
+                        {title}
                     </h2>
-                        <p className="text-darkGray text-lg mb-6 md:mb-8 leading-relaxed max-w-full md:max-w-sm mx-auto lg:mx-0">
-                        Our designer already made a lot of beautiful prototypes of rooms that inspire you.
+                    <p className="text-darkGray text-lg mb-6 md:mb-8 leading-relaxed max-w-full md:max-w-sm mx-auto lg:mx-0">
+                        {description}
                     </p>
-                        <button className="bg-primary hover:bg-opacity-90 text-white font-semibold py-3 px-6 md:py-4 md:px-10 transition-all duration-300 shadow-md">
+                    <button className="bg-primary hover:bg-opacity-90 text-white font-semibold py-3 px-6 md:py-4 md:px-10 transition-all duration-300 shadow-md">
                         Explore More
                     </button>
                 </div>
-                    {/* Right Image Slider */}
-                    <div className="w-full lg:w-2/3 flex gap-6 overflow-x-auto no-scrollbar pl-4 lg:pl-0">
+                {/* Right Image Slider */}
+                <div className="w-full lg:w-2/3 flex gap-6 overflow-x-auto no-scrollbar pl-4 lg:pl-0">
                     {/* Active/Main Slide */}
-                        <div className="relative flex-shrink-0 w-[280px] sm:w-[320px] md:w-[404px] h-[360px] sm:h-[482px] md:h-[582px]">
-                        <img 
-                            src="https://picsum.photos/id/445/800/1200" 
-                            alt="Room Inspiration 1" 
+                    <div className="relative flex-shrink-0 w-[280px] sm:w-[320px] md:w-[404px] h-[360px] sm:h-[482px] md:h-[582px]">
+                        <img
+                            src="https://picsum.photos/id/445/800/1200"
+                            alt="Room Inspiration 1"
                             className="w-full h-full object-cover"
                         />
                         <div className="absolute bottom-6 left-6 bg-white/70 backdrop-blur-md p-6 pr-12 min-w-[217px]">
@@ -43,24 +51,24 @@ const RoomInspiration: React.FC = () => {
 
                     {/* Secondary Slide */}
                     <div className="relative flex-shrink-0 w-[260px] sm:w-[320px] md:w-[372px] h-[280px] sm:h-[380px] md:h-[486px] self-start mt-0">
-                        <img 
-                            src="https://picsum.photos/id/352/800/1000" 
-                            alt="Room Inspiration 2" 
+                        <img
+                            src="https://picsum.photos/id/352/800/1000"
+                            alt="Room Inspiration 2"
                             className="w-full h-full object-cover"
                         />
                         <div className="flex gap-4 absolute -bottom-12">
-                             <div className="w-3 h-3 rounded-full bg-primary border border-primary"></div>
-                             <div className="w-3 h-3 rounded-full border border-gray-300"></div>
-                             <div className="w-3 h-3 rounded-full border border-gray-300"></div>
-                             <div className="w-3 h-3 rounded-full border border-gray-300"></div>
+                            <div className="w-3 h-3 rounded-full bg-primary border border-primary"></div>
+                            <div className="w-3 h-3 rounded-full border border-gray-300"></div>
+                            <div className="w-3 h-3 rounded-full border border-gray-300"></div>
+                            <div className="w-3 h-3 rounded-full border border-gray-300"></div>
                         </div>
                     </div>
 
                     {/* Third Slide (Visible on scroll/wide screens) */}
                     <div className="relative flex-shrink-0 w-[260px] sm:w-[320px] md:w-[372px] h-[280px] sm:h-[380px] md:h-[486px] self-start">
-                        <img 
-                            src="https://picsum.photos/id/164/800/1000" 
-                            alt="Room Inspiration 3" 
+                        <img
+                            src="https://picsum.photos/id/164/800/1000"
+                            alt="Room Inspiration 3"
                             className="w-full h-full object-cover"
                         />
                     </div>

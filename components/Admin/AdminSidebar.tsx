@@ -16,6 +16,7 @@ const ADMIN_MENU = [
   { id: 'categories', label: 'Categories', icon: 'category' },
   { id: 'navigation', label: 'Navigation', icon: 'menu' },
   { id: 'analytics', label: 'Analytics', icon: 'bar_chart' },
+  { id: 'reviews', label: 'Reviews', icon: 'rate_review' },
   { id: 'settings', label: 'Settings', icon: 'settings' },
 ];
 
@@ -39,11 +40,10 @@ export default function AdminSidebar({ activeTab, onTabChange }: AdminSidebarPro
           <button
             key={item.id}
             onClick={() => onTabChange(item.id)}
-            className={`w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-all text-left ${
-              activeTab === item.id
+            className={`w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-all text-left ${activeTab === item.id
                 ? 'bg-yellow-600 text-white font-semibold'
                 : 'text-gray-300 hover:bg-gray-800'
-            }`}
+              }`}
           >
             <span className="material-icons text-xl">{item.icon}</span>
             <span>{item.label}</span>

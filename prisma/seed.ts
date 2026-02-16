@@ -35,6 +35,20 @@ async function main() {
             enabled: true,
             image: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=800&q=80'
         },
+        {
+            name: 'Exotic Quartzite',
+            slug: 'exotic-quartzite',
+            description: 'Rare and durable quartzite',
+            enabled: true,
+            image: 'https://images.unsplash.com/photo-1578500494198-246f612d03b3?auto=format&fit=crop&w=800&q=80'
+        },
+        {
+            name: 'Translucent Onyx',
+            slug: 'translucent-onyx',
+            description: 'Backlit luxury onyx',
+            enabled: true,
+            image: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=800&q=80'
+        },
     ];
 
     for (const cat of categories) {
@@ -75,6 +89,16 @@ async function main() {
         { name: 'Quartz Calacatta', description: 'Engineered quartz with marble look', price: 449.99, category: 'Slabs', tag: 'Best Seller', image: 'https://images.unsplash.com/photo-1615873968403-89e068629265?auto=format&fit=crop&w=600&q=80' },
         { name: 'Porcelain Large Format', description: 'Ultra-thin porcelain slab 3200x1600mm', price: 389.99, category: 'Slabs', tag: 'Modern', image: 'https://images.unsplash.com/photo-1600607687644-c7aafd25c4cd?auto=format&fit=crop&w=600&q=80' },
         { name: 'Granite Countertop Slab', description: 'Durable granite slab for kitchen counters', price: 429.99, category: 'Slabs', image: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=600&q=80' },
+
+        // Exotic Quartzite
+        { name: 'Taj Mahal Quartzite', description: 'Soft cream and white with beige veining', price: 499.99, category: 'Exotic Quartzite', tag: 'Royal', image: 'https://images.unsplash.com/photo-1600607687644-aac4c3eac7f4?auto=format&fit=crop&w=600&q=80' },
+        { name: 'Fusion Blue Quartzite', description: 'Dynamic blue and gray tones with rust accents', price: 549.99, category: 'Exotic Quartzite', tag: 'Artistic', image: 'https://images.unsplash.com/photo-1578500494198-246f612d03b3?auto=format&fit=crop&w=600&q=80' },
+        { name: 'Amazonite Green', description: 'Rare turquoise-green quartzite from Brazil', price: 899.99, category: 'Exotic Quartzite', tag: 'Ultra-Rare', image: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=600&q=80' },
+
+        // Translucent Onyx
+        { name: 'Pink Cloud Onyx', description: 'Delicate pink translucent onyx slab', price: 649.99, category: 'Translucent Onyx', image: 'https://api.dicebear.com/7.x/initials/svg?seed=PinkOnyx' },
+        { name: 'Tiger Onyx', description: 'Bold orange and black striped translucent onyx', price: 749.99, category: 'Translucent Onyx', tag: 'Dramatic', image: 'https://api.dicebear.com/7.x/initials/svg?seed=TigerOnyx' },
+        { name: 'Pure White Onyx', description: 'Crystal clear white onyx for backlighting', price: 799.99, category: 'Translucent Onyx', tag: 'Pure', image: 'https://api.dicebear.com/7.x/initials/svg?seed=WhiteOnyx' },
     ];
 
     for (let i = 0; i < products.length; i++) {

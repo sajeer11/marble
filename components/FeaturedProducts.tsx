@@ -4,7 +4,11 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ProductCard from './ProductCard';
 
-const FeaturedProducts: React.FC = () => {
+interface FeaturedProductsProps {
+  title?: string;
+}
+
+const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ title = 'Our Products' }) => {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,7 +36,7 @@ const FeaturedProducts: React.FC = () => {
       <section className="py-12 sm:py-20 bg-white dark:bg-background-dark">
         <div className="container mx-auto px-4 sm:px-6">
           <h2 className="text-3xl font-display font-bold text-center text-gray-900 dark:text-white mb-12">
-            Our Products
+            {title}
           </h2>
           <div className="text-center text-gray-600 dark:text-gray-400">Loading products...</div>
         </div>
@@ -44,7 +48,7 @@ const FeaturedProducts: React.FC = () => {
     <section className="py-12 sm:py-20 bg-white dark:bg-background-dark">
       <div className="container mx-auto px-4 sm:px-6">
         <h2 className="text-3xl font-display font-bold text-center text-gray-900 dark:text-white mb-12">
-          Our Products
+          {title}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mr-10">
           {products.map((p) => (

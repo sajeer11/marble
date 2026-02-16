@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import ImageUpload from './ImageUpload';
 
 interface Category {
   id: number;
@@ -199,20 +200,11 @@ export default function AdminCategories() {
             </div>
           </div>
 
-          <div>
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-2">Category Image URL *</label>
-            <input
-              type="text"
-              name="image"
-              placeholder="https://..."
-              value={formData.image}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-            {formData.image && (
-              <img src={formData.image} alt="Preview" className="w-32 h-32 object-cover rounded-lg mt-4" />
-            )}
-          </div>
+          <ImageUpload
+            label="Category Image *"
+            value={formData.image || ''}
+            onChange={(url) => setFormData(prev => ({ ...prev, image: url }))}
+          />
 
           <div>
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-2">Description</label>

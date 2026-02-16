@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-const HERO_SLIDES = [
+const DEFAULT_SLIDES = [
   {
     id: 1,
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBt2UJdADwfRgHqnjFdntkgurSQPyd-e_YiA8kY52E0sxlnEdyUwsT6Zofs-KqXQXu5Ug8YlhTY9jIC5GHM_hUkuqcPY6E-61LX1mvjjlUNFJWM6yuU5SmjsKI49i_tuG8pCuHfdtUVu46LjH2cQ1NP-pxPB41LU8cD3VSrn_D8Ap5ztz68Z-RNTmSp-BsfiXDtEBruMLf98qoC2EDbo9Fu0MlWpr42-RYK3nStGrbHJKfCURlcyTm5eCVAuxqe6-odcW6GPED8eEY',
@@ -27,36 +27,49 @@ const HERO_SLIDES = [
   },
 ];
 
-const HeroSlider: React.FC = () => {
+interface HeroSlide {
+  id: number | string;
+  image: string;
+  title: string;
+  description: string;
+  tag?: string;
+}
+
+interface HeroSliderProps {
+  slides?: HeroSlide[];
+}
+
+const HeroSlider: React.FC<HeroSliderProps> = ({ slides = DEFAULT_SLIDES }) => {
+  const currentSlides = slides.length > 0 ? slides : DEFAULT_SLIDES;
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
+    if (currentSlides.length <= 1) return;
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+      setCurrentSlide((prev) => (prev + 1) % currentSlides.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [currentSlides.length]);
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+    setCurrentSlide((prev) => (prev + 1) % currentSlides.length);
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
+    setCurrentSlide((prev) => (prev - 1 + currentSlides.length) % currentSlides.length);
   };
 
-  const currentSlideData = HERO_SLIDES[currentSlide];
+  const currentSlideData = currentSlides[currentSlide];
 
   return (
     <section className="relative w-full h-[420px] sm:h-[520px] md:h-[720px] overflow-hidden">
       {/* Slide Container */}
       <div className="relative w-full h-full">
-        {HERO_SLIDES.map((slide, index) => (
+        {currentSlides.map((slide, index) => (
           <div
             key={slide.id}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === currentSlide ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'
+              }`}
           >
             <img
               alt={slide.title}
@@ -110,20 +123,21 @@ const HeroSlider: React.FC = () => {
       </button>
 
       {/* Dots Indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-3 bg-black/20 backdrop-blur-sm px-6 py-3 rounded-full">
-        {HERO_SLIDES.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentSlide(index)}
-            className={`transition-all duration-300 rounded-full ${
-              index === currentSlide
-                ? 'bg-white h-3 w-8 shadow-lg'
-                : 'bg-white/60 hover:bg-white/90 h-2 w-2'
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
+      {currentSlides.length > 1 && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-3 bg-black/20 backdrop-blur-sm px-6 py-3 rounded-full">
+          {currentSlides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentSlide(index)}
+              className={`transition-all duration-300 rounded-full ${index === currentSlide
+                  ? 'bg-white h-3 w-8 shadow-lg'
+                  : 'bg-white/60 hover:bg-white/90 h-2 w-2'
+                }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 };

@@ -1,15 +1,27 @@
 import React from 'react';
 
-const AboutJourney: React.FC = () => {
+interface AboutJourneyProps {
+  subtitle?: string;
+  title?: string;
+  description?: string;
+  coverImage?: string;
+}
+
+const AboutJourney: React.FC<AboutJourneyProps> = ({
+  subtitle = 'Our Journey',
+  title = 'Crafting Timeless Elegance Since 1995',
+  description = 'MarbleLux began as a small family workshop in the heart of Carrara, Italy. Driven by a singular passion: to reveal the hidden beauty within raw stone. For nearly three decades, we have sourced the finest slabs from sustainable quarries around the world.',
+  coverImage = 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=1000&q=80'
+}) => {
   return (
     <section className="py-24 container mx-auto px-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
         {/* Image */}
         <div className="relative">
           <img
-            alt="Marble Workshop"
+            alt={title}
             className="rounded-2xl shadow-2xl relative z-10"
-            src="https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=1000&q=80"
+            src={coverImage}
           />
           <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl -z-0"></div>
         </div>
@@ -17,19 +29,13 @@ const AboutJourney: React.FC = () => {
         {/* Content */}
         <div className="space-y-8">
           <span className="text-primary font-bold uppercase tracking-[0.2em] text-sm">
-            Our Journey
+            {subtitle}
           </span>
           <h2 className="text-4xl md:text-5xl font-display font-bold leading-tight dark:text-white">
-            Crafting Timeless Elegance Since 1995
+            {title}
           </h2>
           <p className="text-gray-500 dark:text-gray-400 text-lg leading-relaxed">
-            MarbleLux began as a small family workshop in the heart of Carrara, Italy.
-            Driven by a singular passion: to reveal the hidden beauty within raw stone.
-            For nearly three decades, we have sourced the finest slabs from sustainable quarries around the world.
-          </p>
-          <p className="text-gray-500 dark:text-gray-400 text-lg leading-relaxed">
-            We believe every vein tells a unique story. Whether it's a statement kitchen island
-            or a delicate bathroom vanity, our artisans treat each piece with the reverence it deserves.
+            {description}
           </p>
 
           {/* Stats */}

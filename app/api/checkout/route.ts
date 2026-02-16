@@ -15,26 +15,38 @@ export async function POST(request: Request) {
             );
         }
 
+        // Generate a custom obfuscated Order ID
+        const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
+        const timestamp = Date.now().toString().slice(-4);
+        const customOrderId = `MARBLE-${randomStr}-${timestamp}`;
+
         // Create order
+        const parsedUserId = typeof userId === 'number' ? userId : parseInt(String(userId));
+        const finalUserId = isNaN(parsedUserId) ? null : parsedUserId;
+
         const order = await prisma.order.create({
             data: {
+                customId: customOrderId,
                 customerName: customerInfo.name,
                 email: customerInfo.email,
                 phone: customerInfo.phone || null,
                 totalAmount,
                 status: 'pending',
-                items: JSON.stringify(items), // Store items as JSON for simplicity
+                items: items, // Pass object directly for Json field
+                userId: finalUserId,
             },
         });
 
-        // Clear user's cart after successful order
-        await prisma.cartItem.deleteMany({
-            where: {
-                cart: {
-                    userId,
+        // Clear user's cart after successful order - ONLY if we have a real DB userId
+        if (finalUserId) {
+            await prisma.cartItem.deleteMany({
+                where: {
+                    cart: {
+                        userId: finalUserId,
+                    },
                 },
-            },
-        });
+            });
+        }
 
         return NextResponse.json({
             success: true,

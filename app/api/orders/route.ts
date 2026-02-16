@@ -27,10 +27,24 @@ export async function PUT(request: Request) {
     if (!id || !status) {
       return NextResponse.json({ error: 'ID and status required' }, { status: 400 });
     }
-    const order = await prisma.order.update({
+    const order = await (prisma as any).order.update({
       where: { id: Number(id) },
       data: { status },
     });
+
+    // Create notification if order has a userId
+    if (order.userId) {
+      await (prisma as any).notification.create({
+        data: {
+          userId: order.userId,
+          title: 'Order Status Updated',
+          message: `Your order #${order.customId || order.id} status has been updated to "${status}".`,
+          type: 'order_status',
+          link: `/orders`,
+        },
+      });
+    }
+
     return NextResponse.json(order);
   } catch (error) {
     console.error('Error updating order:', error);

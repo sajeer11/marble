@@ -33,7 +33,7 @@ const OrderSummary: React.FC<Props> = ({ cart, cartTotal, paymentMethod, setPaym
     if (typeof window !== 'undefined') {
       const raw = localStorage.getItem('marblelux_billing');
       if (raw) {
-        try { billing = JSON.parse(raw); } catch {}
+        try { billing = JSON.parse(raw); } catch { }
       }
     }
     const customerInfo = {
@@ -69,7 +69,7 @@ const OrderSummary: React.FC<Props> = ({ cart, cartTotal, paymentMethod, setPaym
         if (typeof window !== 'undefined') {
           localStorage.removeItem('marblelux_cart');
         }
-        setSuccess(`Order #${data.order.id} placed successfully.`);
+        setSuccess(`Order #${data.order.customId} placed successfully.`);
       } else {
         const err = await res.json().catch(() => ({}));
         setError(err?.error || 'Failed to place order.');
@@ -167,16 +167,14 @@ const PaymentOption: React.FC<PaymentProps> = ({
     <div className="space-y-2">
       <div className="flex items-center gap-4 cursor-pointer" onClick={() => setSelected(method)}>
         <div
-          className={`w-4 h-4 rounded-full border-2 transition-all ${
-            isActive
+          className={`w-4 h-4 rounded-full border-2 transition-all ${isActive
               ? 'bg-black dark:bg-white border-black dark:border-white'
               : 'border-gray-400'
-          }`}
+            }`}
         ></div>
         <span
-          className={`font-semibold text-sm ${
-            isActive ? 'dark:text-white' : 'text-gray-400'
-          }`}
+          className={`font-semibold text-sm ${isActive ? 'dark:text-white' : 'text-gray-400'
+            }`}
         >
           {label || 'Direct Bank Transfer'}
         </span>
