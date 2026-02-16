@@ -36,7 +36,7 @@ export async function PUT(request: Request) {
             return NextResponse.json({ error: 'Notification ID required' }, { status: 400 });
         }
 
-        const notification = await prisma.notification.update({
+        const notification = await (prisma as any).notification.update({
             where: { id: parseInt(id) },
             data: { read },
         });

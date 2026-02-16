@@ -1,15 +1,8 @@
 {
-  "/api/navigation/route": "app/api/navigation/route.js",
-  "/api/categories/route": "app/api/categories/route.js",
-  "/api/products/route": "app/api/products/route.js",
-  "/api/auth/me/route": "app/api/auth/me/route.js",
   "/api/notifications/route": "app/api/notifications/route.js",
-  "/api/cart/route": "app/api/cart/route.js",
-  "/api/orders/route": "app/api/orders/route.js",
-  "/api/admin/reviews/route": "app/api/admin/reviews/route.js",
   "/page": "app/page.js",
-  "/track/[id]/page": "app/track/[id]/page.js",
   "/shop/page": "app/shop/page.js",
-  "/about/page": "app/about/page.js",
-  "/admin/page": "app/admin/page.js"
+  "/checkout/page": "app/checkout/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/product/[id]/page": "app/product/[id]/page.js"
 }
