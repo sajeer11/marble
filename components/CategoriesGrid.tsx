@@ -43,7 +43,7 @@ const CategoriesGrid: React.FC<CategoriesGridProps> = ({
   return (
     <section className="py-12 sm:py-20 px-4 sm:px-6 lg:px-0 container mx-auto ">
       {/* Section Header */}
-      <div className="text-center mb-12 md:mb-16">
+      <div className="text-center mb-12 md:mb-16  ">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-900 dark:text-white mb-2">
           {title}
         </h2>
@@ -53,7 +53,7 @@ const CategoriesGrid: React.FC<CategoriesGridProps> = ({
       </div>
 
       {/* Categories Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-10 place-items-center mr-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-10 place-items-center ">
         {categories.map((cat) => (
           <div
             key={cat.id}

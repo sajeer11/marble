@@ -22,7 +22,7 @@ const FeatureIcons: React.FC<FeatureIconsProps> = ({ features = DEFAULT_FEATURES
 
   return (
     <section className="bg-accent-beige dark:bg-surface-dark py-12 sm:py-20">
-      <div className="container mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="container mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-4 md:grid-cols-4 gap-2 ">
         {currentFeatures.map((f) => (
           <div key={f.title} className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-3">
             <span className="material-icons text-4xl sm:text-5xl text-gray-900 dark:text-white">{f.icon}</span>

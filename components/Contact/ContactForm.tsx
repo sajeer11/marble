@@ -6,6 +6,7 @@ interface FormField {
   type: string;
   placeholder?: string;
   required?: boolean;
+  className?: string;
 }
 
 const ContactForm: React.FC = () => {
@@ -44,23 +45,39 @@ const ContactForm: React.FC = () => {
 
   return (
     <form className="space-y-8 bg-white dark:bg-surface-dark p-10 rounded-xl shadow-soft border border-gray-100 dark:border-gray-800">
+      {/* Top two fields */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {fields.filter(f => f.type !== 'textarea').slice(0, 2).map((f, i) => (
-          <InputField key={i} label={f.label} placeholder={f.placeholder} type={f.type} />
+          <InputField
+            key={i}
+            label={f.label}
+            placeholder={f.placeholder}
+            type={f.type}
+            className="pl-4" // Left padding applied
+          />
         ))}
       </div>
 
+      {/* Remaining non-textarea fields */}
       {fields.filter(f => f.type !== 'textarea').slice(2).map((f, i) => (
-        <InputField key={i} label={f.label} placeholder={f.placeholder} type={f.type} />
+        <InputField
+          key={i}
+          label={f.label}
+          placeholder={f.placeholder}
+          type={f.type}
+           className="pl-4"
+           
+        />
       ))}
 
+      {/* Textarea fields */}
       {fields.filter(f => f.type === 'textarea').map((f, i) => (
         <div key={i}>
           <label className="block text-sm font-semibold mb-3">{f.label}</label>
           <textarea
             rows={5}
             placeholder={f.placeholder}
-            className="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-background-dark focus:ring-primary focus:border-primary transition-all resize-none"
+            className="w-full rounded-lg mt-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-background-dark focus:ring-primary focus:border-primary transition-all resize-none pl-4" // ✅ Left padding
           ></textarea>
         </div>
       ))}
@@ -75,20 +92,21 @@ const ContactForm: React.FC = () => {
   );
 };
 
-// Reusable input field component
+// Reusable InputField component
 interface InputProps {
   label: string;
   placeholder?: string;
   type?: string;
+  className?: string; // ✅ allow custom classes
 }
 
-const InputField: React.FC<InputProps> = ({ label, placeholder, type = 'text' }) => (
+const InputField: React.FC<InputProps> = ({ label, placeholder, type = 'text', className }) => (
   <div>
     <label className="block text-sm font-semibold mb-3">{label}</label>
     <input
       type={type}
       placeholder={placeholder}
-      className="w-full h-14 rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-background-dark focus:ring-primary focus:border-primary transition-all"
+      className={`w-full h-14 rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-background-dark focus:ring-primary focus:border-primary transition-all ${className || ''}`}
     />
   </div>
 );
